@@ -1,7 +1,56 @@
-    #editor { 
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-    }
+html {
+  min-height: 100%;
+  background: #f00;
+}
+body {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#toolbar-panel {
+  border-bottom: 1px solid #aaa;
+  background: #f3f3f3;
+}
+#toolbar-panel #toolbar-menus {
+  padding: 2px 5px;
+}
+#toolbar-panel #toolbar-menus li {
+  display: inline-block;
+  vertical-align: top;
+}
+#toolbar-panel #toolbar-menus li a {
+  display: block;
+  padding: 5px;
+  color: #444;
+}
+#editor-panel {
+  height: 100%;
+  position: relative;
+}
+#editor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.btn.file {
+  position: relative;
+  overflow: hidden;
+}
+.btn.file input[type="file"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 100px;
+  min-height: 100%;
+}
