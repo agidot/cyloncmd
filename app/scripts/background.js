@@ -53,6 +53,7 @@
   chrome.windows.onRemoved.addListener(function(closedId) {
     if (closedId === mainWindow.id) {
       setBadgeText('off');
+      chrome.contextMenus.removeAll();
       if (mainWindow) {
         chrome.tabs.query({}, function(tabs) {
           var i;
