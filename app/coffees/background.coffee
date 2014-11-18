@@ -43,6 +43,7 @@ chrome.browserAction.onClicked.addListener createMainWindow
 chrome.windows.onRemoved.addListener (closedId) ->
   if closedId is mainWindow.id
     setBadgeText 'off'
+    chrome.contextMenus.removeAll()
     if mainWindow
       chrome.tabs.query {}, (tabs) ->
         for i of tabs

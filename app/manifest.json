@@ -33,6 +33,7 @@
   ],
   "permissions": [
     "background",
+    "contextMenus",
     "tabs",
     "http://*/*",
     "https://*/*"
