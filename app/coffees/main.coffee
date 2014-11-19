@@ -7,7 +7,7 @@ require [
   "ace/ext/language_tools"
 ], (ace, langTools) ->
   editor = ace.edit("editor")
-  editor.setTheme "ace/theme/solarized_dark"
+  editor.setTheme "ace/theme/twilight"
   editor.getSession().setMode "ace/mode/cylon"
   document = editor.getSession().getDocument()
   editor.setOptions

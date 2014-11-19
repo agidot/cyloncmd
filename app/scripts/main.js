@@ -9,7 +9,7 @@
   require(["ace/ace", "ace/ext/language_tools"], function(ace, langTools) {
     var document, editor, readFile;
     editor = ace.edit("editor");
-    editor.setTheme("ace/theme/solarized_dark");
+    editor.setTheme("ace/theme/twilight");
     editor.getSession().setMode("ace/mode/cylon");
     document = editor.getSession().getDocument();
     editor.setOptions({

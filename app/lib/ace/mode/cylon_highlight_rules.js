@@ -20,6 +20,12 @@ var CylonHighlightRules = function() {
             token : "keyword",
             regex : "Feature:|Background:|Scenario:|Scenario\ Outline:|Examples:|Given|When|Then|And|But|\\*",
         }, {
+            token : "variable",
+            regex : '\\[(.*?)\\]'
+        }, {
+            token : "string",
+            regex : '\'(.*?)\''
+        }, {
             token : "string",           // multi line """ string start
             regex : '"{3}',
             next : "qqstring3"
@@ -29,7 +35,7 @@ var CylonHighlightRules = function() {
             next : "qqstring"
         }, {
             token : "comment",
-            regex : "@[A-Za-z0-9]+",
+            regex : "@[A-Za-z0-9_-]+",
             next : "start"
         }, {
             token : "comment",
