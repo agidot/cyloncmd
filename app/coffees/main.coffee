@@ -14,6 +14,7 @@ require [
     enableBasicAutocompletion: true
     enableSnippets: true
     enableLiveAutocompletion: true
+  langTools.snippetCompleter.getDocTooltip = false;
 
   chrome.contextMenus.create
     type: "normal"
