@@ -100,8 +100,11 @@
         reader.readAsText(input.files[0]);
       }
     };
+    $("#yaml-toggle-button").click(function() {
+      $(".editor-panel").toggleClass('two-view');
+    });
     $("#import-file-input").click(function() {
-      return $(this).val("");
+      $(this).val("");
     });
     $("#import-file-input").change(function() {
       if ($(this).val() === "") {
@@ -109,13 +112,13 @@
       }
       readFile(this);
     });
-    return $("#export-button").click(function() {
+    $("#export-button").click(function() {
       var blob, text;
       text = editor.getSession().getValue();
       blob = new Blob([text], {
         type: "text/plain;charset=utf-8"
       });
-      return saveAs(blob, "feature-file.feature");
+      saveAs(blob, "feature-file.feature");
     });
   });
 

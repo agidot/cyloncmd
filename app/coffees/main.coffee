@@ -97,8 +97,13 @@ require [
       reader.readAsText input.files[0]
     return
 
+  $("#yaml-toggle-button").click ->
+    $(".editor-panel").toggleClass('two-view')
+    return
+
   $("#import-file-input").click ->
     $(this).val ""
+    return
 
   $("#import-file-input").change ->
     return  if $(this).val() is ""
@@ -111,3 +116,6 @@ require [
       type: "text/plain;charset=utf-8"
     )
     saveAs blob, "feature-file.feature"
+    return
+
+  return

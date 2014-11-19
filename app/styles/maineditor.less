@@ -1,6 +1,7 @@
 html{
 	min-height: 100%;
 	background: #f00;
+	overflow-y: hidden;
 }
 
 body{
@@ -32,6 +33,7 @@ ul{
 				display: block;
 				padding: 5px;
 				color: #444;
+				font-size: 16px;
 			}
 		}
 	}
@@ -48,6 +50,12 @@ ul{
     right: 0;
     bottom: 0;
     left: 0;
+}
+
+.editor-panel{
+	&.two-view{
+		height: 50% !important;
+	}
 }
 
 .btn{

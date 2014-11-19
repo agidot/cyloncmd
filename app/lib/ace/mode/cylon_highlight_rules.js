@@ -34,7 +34,7 @@ var CylonHighlightRules = function() {
             regex : '"',
             next : "qqstring"
         }, {
-            token : "comment",
+            token : "keyword",
             regex : "@[A-Za-z0-9_-]+",
             next : "start"
         }, {
