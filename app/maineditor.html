@@ -13,19 +13,32 @@
     </head>
     <body>
         <div id="toolbar-panel">
-            <ul>
-                <li></li>
+            <ul id="toolbar-menus">
+                <li>
+                    <a id="import-button" href="#" class="btn file">
+                        <i class="fa fa-upload"></i>
+                        <input type="file" id="import-file-input">
+                    </a>
+                </li>
+                <li>
+                    <a id="export-button" href="#" class=""><i class="fa fa-save"></i></a>
+                </li>
+                <li class="pull-right">
+                    <a id="yaml-toggle-button" href="#" class="">Yaml</a>
+                </li>
             </ul>   
-        <div>
-        <div id="yaml-editor">
         </div>
-        <div id="editor-panel">
-            <div id="editor"></div>
+        <div id="yaml-editor-panel" class="edit-panel">
+            <div id="yaml-editor" class="editor"></div>
+        </div>
+        <div id="editor-panel" class="edit-panel">
+            <div id="editor" class="editor"></div>
         </div>
         <!-- build:js scripts/vendor.js -->
         <!-- bower:js -->
         <script src="bower_components/jquery/dist/jquery.js"></script>
         <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="bower_components/FileSaver/FileSaver.js"></script>
         <!-- endbower -->
         <!-- endbuild -->
         <script data-main="scripts/main" src="bower_components/requirejs/require.js"></script>

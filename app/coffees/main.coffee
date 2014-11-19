@@ -79,6 +79,29 @@ require(["ace/ace", 'ace/ext/language_tools', "text!../snippets/cylon.snippets"]
     parentId: 'WHEN'
   )
 
+  readFile = (input) ->
+    if input.files and input.files[0]
+      reader = new FileReader()
+      reader.onload = (e) ->
+        editor.insert(e.target.result)
+        return
+
+      reader.readAsText input.files[0]
+    return
+
+  $('#import-file-input').click ->
+    $(this).val('')
+
+  $('#import-file-input').change ->
+    return  if $(this).val() is ''
+    readFile this
+    return
+
+  $('#export-button').click ->
+    text = editor.getSession().getValue();
+    blob = new Blob([text],
+      type: 'text/plain;charset=utf-8'
+    )
+    saveAs blob, 'feature-file.feature'
+    return
 )
-
-
