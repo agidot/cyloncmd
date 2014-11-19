@@ -6,13 +6,12 @@
     }
   });
 
-
-  require(['ace/ace', 'ace/ext/language_tools', 'text!../snippets/cylon.snippets'], function(ace, langTools, cylonSnippets) {
+  require(["ace/ace", 'ace/ext/language_tools', "text!../snippets/cylon.snippets"], function(ace, langTools, cylonSnippets) {
     var document, editor, readFile, snippetManager;
     editor = ace.edit("editor");
-    snippetManager = ace.require('ace/snippets').snippetManager;
-    editor.setTheme('ace/theme/solarized_dark');
-    editor.getSession().setMode('ace/mode/gherkin');
+    snippetManager = ace.require("ace/snippets").snippetManager;
+    editor.setTheme("ace/theme/solarized_dark");
+    editor.getSession().setMode("ace/mode/gherkin");
     document = editor.getSession().getDocument();
     editor.setOptions({
       enableBasicAutocompletion: true,

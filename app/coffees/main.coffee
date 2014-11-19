@@ -1,8 +1,8 @@
 #baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/")
 require.config(
   paths:
-    ace:'../bower_components/ace/lib/ace'
-    text : "../bower_components/requirejs-text/text"
+    ace: '../lib/ace',
+    text: '../lib/requirejs/text'
 )
 require(["ace/ace", 'ace/ext/language_tools', "text!../snippets/cylon.snippets"], (ace,langTools,cylonSnippets)->
   editor = ace.edit("editor")
