@@ -1,0 +1,90 @@
+
+#when
+snippet user enters '...' to the [...]
+	user enters '${1:value}' to the [${2:element}]
+snippet user enters date '...' to the [...]
+	user enters date '${1:value}' to the [${2:element}]
+snippet user clears value on the [...]
+	user clears value on the [${1:element}]
+snippet user clicks the [...]
+	user clicks the [${1:element}]
+snippet user selects the [...]
+	user selects the [${1:element}]
+snippet user selects '...' on the [...]
+	user selects '${1:value}' on the [${2:element}]
+snippet user checks the [...]
+	user checks the [${1:element}]
+snippet user unchecks the [...]
+	user unchecks the [${1:element}]
+snippet user moves mouse over the [...]
+	user moves mouse over the [${1:element}]
+snippet user uploads file '...' to the [...]
+	user uploads file '${1:file}' to the [${2:element}]
+snippet user enters '...' to the popup
+	user enters '${1:value}' to the popup
+snippet user accept the popup
+	user accept the popup
+snippet user cancel the popup
+	user cancel the popup
+snippet user enters date next '...' days to the [...]
+	user enters date next '${1:value}' days to the [${2:element}]
+snippet user waits for '...' seconds
+	user waits for '${1:time}' seconds
+#then
+snippet "the browser shows [...] page"
+	the browser shows [${1:page}] page
+'body': "the browser shows [${1:page}] page"
+snippet "the page url is '...'"
+	the page url is '${1:url}'
+snippet "the page url contains '...'"
+	the page url contains '${1:url}'
+snippet "the [...] value is '...'"
+	the [${1:element}] value is '${2:value}'
+snippet "the [...] value is not '...'"
+	the [${1:element}] value is not '${2:value}'
+snippet "the [...] value contains '...'"
+	the [${1:element}] value contains '${2:value}''
+snippet "the [...] value is more than '...'"
+	the [${1:element}] value is more than '${2:value}'
+snippet "the [...] value is more than or equal '...'"
+	the [${1:element}] value is more than or equal '${2:value}'
+snippet "the [...] value is less than '...'"
+	the [${1:element}] value is less than '${2:value}'
+snippet "the [...] value is less than or equal '...'"
+	the [${1:element}] value is less than or equal '${2:value}'
+snippet "the [...] value is between '...' and '...'"
+	the [${1:element}] value is between '${2:value}' and '${3:value}'
+snippet "the [...] value is empty"
+	the [${1:element}] value is empty
+snippet "the [...] value is not empty"
+	the [${1:element}] value is not empty
+snippet "the [...] exists"
+	the [${1:element}] exists
+snippet "the [...] does not exist"
+	the [${1:element}] does not exist
+snippet "the [...] is visible"
+	the [${1:element}] is visible
+snippet "the [...] is invisible"
+	the [${1:element}] is invisible
+snippet "the [...] is selected"
+	the [${1:element}] is selected
+snippet "the [...] is not selected"
+	the [${1:element}] is not selected
+snippet "the [...] is checked"
+	the [${1:element}] is checked
+snippet "the [...] is unchecked"
+	the [${1:element}] is unchecked
+snippet "the popup message shows '...'"
+	the popup message shows '${1:value}'
+snippet "the [...] tooltip text is '...'"
+	the [${1:element}] tooltip text is '${2:value}'
+snippet "the page has '...' items of [...]"
+	the page has '${1:amount}' items of [${2:element}]
+snippet "the [...] is enabled"
+	the [${1:element}] is enabled
+snippet "the [...] is disabled"
+	the [${1:element}] is disabled
+snippet "the [...] value matches pattern '...'"
+	the [${1:element}] value matches pattern '${2:pattern}'
+snippet "the [...] class contains '...'"
+	the [${1:element}] class contains '${2:value}'
