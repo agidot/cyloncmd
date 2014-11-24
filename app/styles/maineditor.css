@@ -36,6 +36,16 @@ a:hover {
   color: #444;
   font-size: 16px;
 }
+#toolbar-panel #toolbar-menus #yaml-toggle-button {
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 11px;
+  vertical-align: middle;
+  margin-top: 7px;
+  background: #6EB160;
+  color: #fff;
+  margin-right: 5px;
+}
 #editor-panel {
   height: 100%;
   position: relative;
@@ -74,6 +84,7 @@ a:hover {
   font-size: 13px;
   border-radius: 4px;
   max-width: 200px;
+  min-height: 23px;
   display: inline-block;
   border-radius: 2px;
   overflow: hidden;
@@ -96,10 +107,21 @@ a:hover {
   background: transparent;
   border-radius: 0;
 }
+.element-item .element:focus {
+  outline: none;
+}
 .element-item .element-text-button {
   font-size: 12px;
   padding: 3px 10px;
   text-align: left;
+  max-width: 150px;
+}
+.element-item .element-text-button .element-text {
+  display: block;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .btn.file {
   position: relative;

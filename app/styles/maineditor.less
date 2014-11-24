@@ -1,3 +1,9 @@
+.text-overflow(){
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 html{
 	min-height: 100%;
 	background: #f00;
@@ -42,6 +48,17 @@ a{
 				color: #444;
 				font-size: 16px;
 			}
+		}
+
+		#yaml-toggle-button{
+			border-radius: 3px;
+			padding: 2px 5px;
+			font-size: 11px;
+			vertical-align: middle;
+			margin-top: 7px;
+			background: #6EB160;
+			color: #fff;
+			margin-right: 5px;
 		}
 	}
 }
@@ -92,6 +109,7 @@ a{
 	font-size: 13px;
 	border-radius: 4px;
 	max-width: 200px;
+	min-height: 23px;
 	display: inline-block;
 	border-radius: 2px;
 	overflow: hidden;
@@ -117,12 +135,23 @@ a{
 		border: none;
 		background: transparent;
 		border-radius: 0;
+
+		&:focus{
+			outline: none;
+		}
 	}
 
 	.element-text-button{
 		font-size: 12px;
 		padding: 3px 10px;
 		text-align: left;
+		max-width: 150px;
+
+		.element-text{
+			display: block;
+			max-width: 120px;
+			.text-overflow();
+		}
 	}
 }
 

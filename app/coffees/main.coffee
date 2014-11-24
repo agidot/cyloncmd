@@ -119,7 +119,7 @@ require [
               <div class="panel panel-default">
                 <div class="panel-heading" role="tab" id="headingOne">
                   <div class="panel-title">
-                    <a data-toggle="collapse" data-parent="" href="#elements-0" aria-expanded="true" aria-controls="collapseOne">
+                    <a data-toggle="collapse" class="page-number" data-parent="" href="#elements-0" aria-expanded="true" aria-controls="collapseOne">
                       #' + pages.length + ' Page Name
                     </a>
 
