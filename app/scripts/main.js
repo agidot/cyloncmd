@@ -96,7 +96,7 @@
       return pages[index].active = true;
     };
     addPage = function(tabId, pageURL, pageTitle) {
-      var html, page;
+      var html, page, pageElement;
       pageURL = stripTrailingSlash(pageURL);
       pageCount++;
       page = new Page(tabId, pageURL, pageTitle);
@@ -105,7 +105,28 @@
       console.log(pages.length - 1);
       html += '<div class="panel-group page-object" id="page-object-' + (pages.length - 1) + '"> <div class="panel panel-default"> <div class="panel-heading" role="tab" id="headingOne"> <div class="panel-title"> <a data-toggle="collapse" class="page-number" data-parent="" href="#elements-0" aria-expanded="true" aria-controls="collapseOne"> #' + pages.length + ' Page Name </a> <a href="#" class="pull-right"> <i class="fa fa-close remove-button remove-page-button"></i> </a> </div> </div> <div id="elements-' + (pages.length - 1) + '" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne"> <div class="panel-body"> <ul class="elements"></ul> </div> </div> </div> </div>';
       console.log(html);
-      return $('#yaml-editor').append(html);
+      $('#yaml-editor-panel').append(html);
+      pageElement = $('#page-object-' + (pages.length - 1));
+      console.log(pageElement);
+      return pageElement.find('.page-number').click(function(e) {
+        var i, pageElements, _results;
+        console.log('lafefe');
+        if (page.active) {
+          chrome.tabs.sendMessage(page.tabId, {
+            msg: 'removeAllStyles'
+          });
+        }
+        pages.splice(pages.length - 1);
+        pageElement.remove();
+        pageElements = $('.page-object');
+        i = 0;
+        _results = [];
+        while (i < pages.length) {
+          $('.page-number').eq(i).text('page #' + (i + 1));
+          _results.push(i++);
+        }
+        return _results;
+      });
     };
     processIncomingMessage = function(request, sender, sendResponse) {
       var element, elementsDom, haveTabId, i, index, j, k, page, senderURL;

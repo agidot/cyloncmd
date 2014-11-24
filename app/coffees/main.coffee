@@ -137,8 +137,21 @@ require [
           </div>';
 
     console.log html
-    $('#yaml-editor').append html
-
+    $('#yaml-editor-panel').append html
+    pageElement = $('#page-object-'+ (pages.length-1))
+    console.log pageElement
+    pageElement.find('.page-number').click (e) ->
+      console.log 'lafefe'
+      if page.active
+        chrome.tabs.sendMessage page.tabId,
+          msg: 'removeAllStyles'
+      pages.splice pages.length-1
+      pageElement.remove()
+      pageElements = $('.page-object')
+      i = 0
+      while i < pages.length
+        $('.page-number').eq(i).text 'page #' + (i + 1)
+        i++
     
   processIncomingMessage = (request, sender, sendResponse) ->
     console.log sender.tab.url
