@@ -15,78 +15,12 @@ require [
     enableSnippets: true
     enableLiveAutocompletion: true
   langTools.snippetCompleter.getDocTooltip = false;
+  console.log 'editor'
+  console.log editor
 
-  chrome.contextMenus.create
-    type: "normal"
-    title: "Given..."
-    contexts: ["all"]
-    id: "GIVEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "When..."
-    contexts: ["all"]
-    id: "WHEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "Then..."
-    contexts: ["all"]
-    id: "THEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "user enters '...' to the [...]"
-    id: "WHEN_ENTER_TO"
-    parentId: "WHEN"
-    contexts: ["all"]
-    onclick: ->
-      editor.navigateLineStart()
-      editor.splitLine()
-      editor.insert "When user enters '${1:value}' to the [${2:element}]"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "user enters date '...' to the [...]"
-    id: "WHEN_ENTER_DATE"
-    contexts: ["all"]
-    parentId: "WHEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "user clears value on the [...]"
-    id: "WHEN_CLEAR_VALUE"
-    contexts: ["all"]
-    parentId: "WHEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "user clicks the [...]"
-    id: "WHEN_CLICK"
-    contexts: ["all"]
-    parentId: "WHEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "user unchecks the [...]"
-    id: "WHEN_UNCHECK"
-    contexts: ["all"]
-    parentId: "WHEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "user moves mouse over the [...]"
-    id: "WHEN_MOVE_MOUSE_OVER"
-    contexts: ["all"]
-    parentId: "WHEN"
-
-  chrome.contextMenus.create
-    type: "normal"
-    title: "user uploads file '...' to the [...]"
-    id: "WHEN_UPLOAD_FILE"
-    contexts: ["all"]
-    parentId: "WHEN"
-
+  stripTrailingSlash = (str) ->
+    return str.substr(0, str.length - 1)  if str.substr(-1) is '/'
+    str
   readFile = (input) ->
     if input.files and input.files[0]
       reader = new FileReader()
@@ -118,4 +52,163 @@ require [
     saveAs blob, "feature-file.feature"
     return
 
+  chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
+    console.log (if sender.tab then 'from a content script:' + sender.tab.url else 'from the extension')
+    processIncomingMessage request, sender, sendResponse
+    return
+      
+
+  Page = (tabId, url, name) ->
+    @tabId = tabId
+    @elements = []
+    @name = name
+    @url = url
+    @active = false
+    @elementCount = 0
+    return
+
+  pages = []
+  pageCount = 0
+  bg = chrome.extension.getBackgroundPage()
+  tobeSent = {}
+  headerHeight = 100
+
+  addElement = (pageIndex, element) ->
+    page = pages[pageIndex]
+    element.elementId = '' + pageIndex + '-' + page.elements.length
+    page.elements.push element
+    console.log element.elementId
+
+    pageURL = page.url
+    elements = page.elements
+    if element.comment is undefined
+      element.comment = ''
+    html = ''
+    html += '<button type="button" class="btn btn-primary elementBtn" data-toggle="modal" data-element-id="'+ element.elementId + '" data-target="#elementModal">' + element.name + '</button>'
+    console.log html
+    $('.page-object').eq(pageIndex).append html
+    
+
+  deactivatePage = (index) ->
+    pages[index].active = false
+  activatePage = (index) ->
+    pages[index].active = true
+  addPage = (tabId, pageURL, pageTitle) ->
+    pageURL = stripTrailingSlash(pageURL)
+    pageCount++
+    page = new Page(tabId, pageURL, pageTitle)
+    pages.push page
+    html = ''
+    console.log pages.length-1
+    html += '<div class="page-object" id="page-object-' + (pages.length-1) + '"> <h4 class = "page-number"> page #' + pages.length + '</h4></div>'
+    console.log html
+    $('#yaml-editor-panel').append html
+
+    
+  processIncomingMessage = (request, sender, sendResponse) ->
+    console.log sender.tab.url
+    senderURL = stripTrailingSlash(sender.tab.url)
+    if request.msg is 'addElement'
+      sendResponse msg: 'success'
+      element = request.element
+      console.log element
+      haveTabId = false
+      console.log pages
+      for index of pages
+        console.log 'kak'
+        console.log pages[index].url
+        console.log senderURL
+        if pages[index].tabId is sender.tab.id and pages[index].url is senderURL
+          console.log index
+          addElement index, element
+          haveTabId = true
+      unless haveTabId
+        console.log sender.tab.id
+        console.log senderURL
+        console.log sender.tab.title
+        page = addPage(sender.tab.id, senderURL, sender.tab.title)
+        addElement pages.length - 1, element
+    else if request.msg is 'newPage'
+      sendResponse msg: 'startExtension'
+      if tobeSent[sender.tab.id]
+        chrome.tabs.sendMessage sender.tab.id,
+          msg: 'findXpaths'
+          Xpaths: tobeSent[sender.tab.id]
+
+        delete tobeSent[sender.tab.id]
+
+        return
+      for k of pages
+        deactivatePage k  if pages[k].tabId is sender.tab.id and pages[k].url isnt senderURL  if pages[k].active
+    else if request.msg is 'checkXpath'
+      console.log 'checkXpath ' + request.Xpath + ' found = ' + request.found
+      for i of pages
+        if pages[i].tabId is sender.tab.id and pages[i].url is senderURL
+          j = 0
+
+          while j < pages[i].elements.length
+            if pages[i].elements[j].Xpath is request.Xpath
+              elementsDom = $('.page-object').eq(i).find('.element-no')
+              if request.found
+                elementsDom.eq(j).css 'color', 'green'
+              else
+                elementsDom.eq(j).css 'color', 'red'
+            j++
+    return
+
+  clearPages = (callback, arg) ->
+    pages = []
+    pageCount = 0
+    tobeSent = {}
+    chrome.tabs.query {}, (tabs) ->
+      for i of tabs
+        chrome.tabs.sendMessage tabs[i].id,
+          msg: 'removeAllStyles'
+      $('#container').html ''
+      callback arg  if callback
+      return
+
+    return
+  chrome.tabs.onRemoved.addListener (tabId, removeInfo) ->
+    for i of pages
+      deactivatePage i  if pages[i].tabId is tabId  if pages[i].active
+    return
+
+
+  $ ->
+    $('#clear-all-button').click (e) ->
+      clearPages()
+      return
+
+    $('.elements li').click (e) ->
+      $('.elements li').removeClass 'active'
+      $(this).addClass 'active'
+      return
+    console.log('awgweg')
+    $('#elementModal').on 'show.bs.modal', (event)-> 
+      console.log 'awegawhar'
+      button = $(event.relatedTarget) 
+      console.log 'efwegewgg'
+      elementId = button.data('element-id')
+      pageIndex = parseInt elementId.split('-')[0]
+      elementId = parseInt elementId.split('-')[1]
+      console.log 'pageIndex ' + pageIndex + ' elementId ' + elementId
+      element = pages[pageIndex].elements[elementId]
+      modal = $(this)
+      console.log modal
+      modal.find('.modal-title').text(element.Xpath)
+      modal.find('.modal-body input').val(element.name)
+      modal.find('.modal-body textarea').val(element.comment)
+      modal.find('.modal-footer .btn-primary').unbind('click')
+      modal.find('.modal-footer .btn-primary').click( ->
+        element.name = modal.find('.modal-body input').val()
+        element.comment = modal.find('.modal-body textarea').val()
+        console.log '' + element.name
+        button.text element.name
+        modal.modal 'hide'
+        return
+      )
+      return
+    return
   return
+    
