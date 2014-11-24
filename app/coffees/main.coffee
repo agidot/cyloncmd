@@ -87,10 +87,10 @@ require [
 
     html += '<li class="element-item">
               <div class="btn-group">
-                <button type="button" class="element element-text-button btn btn-primary elementBtn" data-toggle="modal" data-element-id="'+ element.elementId + '" data-target="#elementModal">
+                <button type="button" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="'+ element.elementId + '">
                   <span class="element-text">' + element.name + '</span>
                 </button><button type="button" class="element element-control">
-                  <i class="fa fa-pencil"></i>
+                  <i class="fa fa-long-arrow-up"></i>
                 </button><button type="button" class="element element-control">
                   <i class="fa fa-remove"></i>
                 </button>
@@ -114,12 +114,11 @@ require [
     html = ''
     console.log pages.length-1
 
-
     html += '<div class="panel-group page-object" id="page-object-' + (pages.length-1) + '">
               <div class="panel panel-default">
                 <div class="panel-heading" role="tab" id="headingOne">
                   <div class="panel-title">
-                    <a data-toggle="collapse" class="page-number" data-parent="" href="#elements-0" aria-expanded="true" aria-controls="collapseOne">
+                    <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length-1) + '">
                       #' + pages.length + ' Page Name
                     </a>
 
@@ -128,7 +127,7 @@ require [
                     </a>
                   </div>
                 </div>
-                <div id="elements-' + (pages.length-1) + '" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                <div id="elements-' + (pages.length-1) + '" class="panel-collapse collapse in">
                     <div class="panel-body">
                         <ul class="elements"></ul>
                     </div>

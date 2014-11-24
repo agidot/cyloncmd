@@ -1,6 +1,6 @@
 html {
   min-height: 100%;
-  background: #f00;
+  background: #fff;
   overflow-y: hidden;
 }
 body {
@@ -19,9 +19,39 @@ ul {
 a:hover {
   text-decoration: none;
 }
+textarea {
+  resize: none;
+}
+input[type="text"],
+textarea {
+  border-radius: 0 !important;
+}
+.btn {
+  border-radius: 2px;
+}
+.modal-dialog {
+  font-size: 13px;
+}
+.modal-dialog .modal-content {
+  border-radius: 3px;
+  border: 1px solid #ccc;
+}
+.modal-dialog .modal-content .modal-header {
+  padding: 10px 15px;
+  border: none;
+}
+.modal-dialog .modal-content .modal-header .modal-title {
+  font-size: 14px;
+}
+.modal-dialog .modal-content .modal-footer {
+  padding: 10px 15px;
+}
+.modal-dialog .modal-content .modal-footer .btn {
+  font-size: 13px;
+}
 #toolbar-panel {
   border-bottom: 1px solid #aaa;
-  background: #f3f3f3;
+  background: #fff;
 }
 #toolbar-panel #toolbar-menus {
   padding: 2px 5px;
@@ -33,7 +63,7 @@ a:hover {
 #toolbar-panel #toolbar-menus li a {
   display: block;
   padding: 5px;
-  color: #444;
+  color: #555;
   font-size: 16px;
 }
 #toolbar-panel #toolbar-menus #yaml-toggle-button {
