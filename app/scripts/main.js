@@ -37,6 +37,7 @@
       }
     };
     $("#yaml-toggle-button").click(function() {
+      $(this).toggleClass('active');
       $(".editor-panel").toggleClass('two-view');
     });
     $("#import-file-input").click(function() {

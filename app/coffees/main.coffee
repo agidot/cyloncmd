@@ -32,6 +32,7 @@ require [
     return
 
   $("#yaml-toggle-button").click ->
+    $(this).toggleClass('active')
     $(".editor-panel").toggleClass('two-view')
     return
 

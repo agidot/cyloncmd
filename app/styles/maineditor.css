@@ -70,11 +70,17 @@ textarea {
   border-radius: 3px;
   padding: 2px 5px;
   font-size: 11px;
+  font-weight: bold;
   vertical-align: middle;
   margin-top: 7px;
+  background: transparent;
+  color: #6EB160;
+  margin-right: 5px;
+  border: 2px solid #6EB160;
+}
+#toolbar-panel #toolbar-menus #yaml-toggle-button.active {
   background: #6EB160;
   color: #fff;
-  margin-right: 5px;
 }
 #editor-panel {
   height: 100%;
@@ -103,18 +109,22 @@ textarea {
   background: #ddd;
   border-radius: 0;
   color: #666;
+  padding: 7px 10px;
 }
 .panel .panel-heading .panel-title {
-  font-size: 14px;
+  font-size: 13px;
+}
+.panel .panel-body {
+  padding: 10px;
 }
 .element-item {
   padding: 0;
-  background: #5da0c9;
+  background: #55acee;
   color: #fff;
   font-size: 13px;
   border-radius: 4px;
   max-width: 200px;
-  min-height: 23px;
+  min-height: 25px;
   display: inline-block;
   border-radius: 2px;
   overflow: hidden;
@@ -130,7 +140,8 @@ textarea {
 }
 .element-item .element-control {
   display: none;
-  background: #555 !important;
+  background: #66757f !important;
+  min-height: 25px;
 }
 .element-item .element {
   border: none;
@@ -165,4 +176,8 @@ textarea {
   cursor: pointer;
   font-size: 100px;
   min-height: 100%;
+}
+.btn.btn-primary {
+  background: #55acee;
+  border: 1px solid #55acee;
 }

@@ -93,11 +93,18 @@ textarea{
 			border-radius: 3px;
 			padding: 2px 5px;
 			font-size: 11px;
+			font-weight: bold;
 			vertical-align: middle;
 			margin-top: 7px;
-			background: #6EB160;
-			color: #fff;
+			background: transparent;
+			color: #6EB160;
 			margin-right: 5px;
+			border: 2px solid #6EB160;
+
+			&.active{
+				background: #6EB160;
+				color: #fff;
+			}
 		}
 	}
 }
@@ -134,21 +141,26 @@ textarea{
 		background: #ddd;
 		border-radius: 0;
 		color: #666;
+		padding: 7px 10px;
 
 		.panel-title{
-			font-size: 14px;
+			font-size: 13px;
 		}
+	}
+
+	.panel-body{
+		padding: 10px;
 	}
 }
 
 .element-item{
 	padding: 0;
-	background: #5da0c9;
+	background: #55acee;
 	color: #fff;
 	font-size: 13px;
 	border-radius: 4px;
 	max-width: 200px;
-	min-height: 23px;
+	min-height: 25px;
 	display: inline-block;
 	border-radius: 2px;
 	overflow: hidden;
@@ -167,7 +179,8 @@ textarea{
 
 	.element-control{
 		display: none;
-		background: #555 !important;
+		background: #66757f !important;
+		min-height: 25px;
 	}
 
 	.element{
@@ -208,5 +221,10 @@ textarea{
             font-size: 100px;
             min-height: 100%;
         }
+    }
+
+    &.btn-primary{
+    	background: #55acee;
+    	border: 1px solid #55acee;
     }
 }
