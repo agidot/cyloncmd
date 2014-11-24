@@ -91,16 +91,33 @@ require [
                   <span class="element-text">' + element.name + '</span>
                 </button><button type="button" class="element element-control">
                   <i class="fa fa-pencil"></i>
-                </button><button type="button" class="element element-control">
+                </button><button type="button" class="element element-control remove-element-button">
                   <i class="fa fa-remove"></i>
                 </button>
               </div>
             </li>';
 
-    # html += '<button type="button" class="b.find("elements")tn btn-primary elementBtn" data-toggle="modal" data-element-id="'+ element.elementId + '" data-target="#elementModal">' + element.name + '</button>'
     console.log html
-    $('.page-object').eq(pageIndex).find('.elements').append html
-    
+    pageElement =  $('.page-object').eq(pageIndex)
+    pageElement.find('.elements').append html
+    elementDom = pageElement.find('.element-item').eq(elements.length-1)
+    elementDom.find('.element-text-button').mouseenter((e)->
+      chrome.tabs.sendMessage page.tabId,
+        msg: 'changeStyleAtXpath'
+        Xpath: element.Xpath
+        url: pageURL
+    ).mouseleave (e)->
+        chrome.tabs.sendMessage page.tabId,
+          msg: 'recoverStyleAtXpath'
+          Xpath: element.Xpath
+          url: pageURL
+    elementDom.find('.remove-element-button').click (e) ->
+      chrome.tabs.sendMessage page.tabId,
+        msg: 'removeStyleAtXpath'
+        Xpath: element.Xpath
+        url: pageURL
+      elements.splice pageIndex, 1
+      elementDom.remove()
 
   deactivatePage = (index) ->
     pages[index].active = false
@@ -140,7 +157,7 @@ require [
     $('#yaml-editor').append html
     pageElement = $('#page-object-'+ (pages.length-1))
     console.log pageElement
-    pageElement.find('.page-number').click (e) ->
+    pageElement.find('.remove-page-button').click (e) ->
       console.log 'lafefe'
       if page.active
         chrome.tabs.sendMessage page.tabId,
@@ -150,9 +167,9 @@ require [
       pageElements = $('.page-object')
       i = 0
       while i < pages.length
-        $('.page-number').eq(i).text 'page #' + (i + 1)
+        $('.page-number').eq(i).text '#' + (i + 1) + ' Page Name'
         i++
-    
+
   processIncomingMessage = (request, sender, sendResponse) ->
     console.log sender.tab.url
     senderURL = stripTrailingSlash(sender.tab.url)
