@@ -123,8 +123,8 @@ require [
                       #' + pages.length + ' Page Name
                     </a>
 
-                    <a href="#" class="pull-right">
-                      <i class="fa fa-close remove-button remove-page-button"></i>
+                    <a href="#" class="pull-right remove-page-button">
+                      <i class="fa fa-close remove-button"></i>
                     </a>
                   </div>
                 </div>
@@ -137,7 +137,7 @@ require [
           </div>';
 
     console.log html
-    $('#yaml-editor-panel').append html
+    $('#yaml-editor').append html
     pageElement = $('#page-object-'+ (pages.length-1))
     console.log pageElement
     pageElement.find('.page-number').click (e) ->
