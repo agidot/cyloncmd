@@ -74,7 +74,7 @@
     tobeSent = {};
     headerHeight = 100;
     addElement = function(pageIndex, element) {
-      var elements, html, page, pageURL;
+      var elementDom, elements, html, page, pageElement, pageURL;
       page = pages[pageIndex];
       element.elementId = '' + pageIndex + '-' + page.elements.length;
       page.elements.push(element);
@@ -85,9 +85,33 @@
         element.comment = '';
       }
       html = '';
-      html += '<li class="element-item"> <div class="btn-group"> <button type="button" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="' + element.elementId + '"> <span class="element-text">' + element.name + '</span> </button><button type="button" class="element element-control"> <i class="fa fa-long-arrow-up"></i> </button><button type="button" class="element element-control"> <i class="fa fa-remove"></i> </button> </div> </li>';
+      html += '<li class="element-item"> <div class="btn-group"> <button type="button" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="' + element.elementId + '"> <span class="element-text">' + element.name + '</span> </button><button type="button" class="element element-control"> <i class="fa fa-long-arrow-up"></i> </button><button type="button" class="element element-control remove-element-button"> <i class="fa fa-remove"></i> </button> </div> </li>';
       console.log(html);
-      return $('.page-object').eq(pageIndex).find('.elements').append(html);
+      pageElement = $('.page-object').eq(pageIndex);
+      pageElement.find('.elements').append(html);
+      elementDom = pageElement.find('.element-item').eq(elements.length - 1);
+      elementDom.find('.element-text-button').mouseenter(function(e) {
+        return chrome.tabs.sendMessage(page.tabId, {
+          msg: 'changeStyleAtXpath',
+          Xpath: element.Xpath,
+          url: pageURL
+        });
+      }).mouseleave(function(e) {
+        return chrome.tabs.sendMessage(page.tabId, {
+          msg: 'recoverStyleAtXpath',
+          Xpath: element.Xpath,
+          url: pageURL
+        });
+      });
+      return elementDom.find('.remove-element-button').click(function(e) {
+        chrome.tabs.sendMessage(page.tabId, {
+          msg: 'removeStyleAtXpath',
+          Xpath: element.Xpath,
+          url: pageURL
+        });
+        elements.splice(pageIndex, 1);
+        return elementDom.remove();
+      });
     };
     deactivatePage = function(index) {
       return pages[index].active = false;
@@ -108,7 +132,7 @@
       $('#yaml-editor').append(html);
       pageElement = $('#page-object-' + (pages.length - 1));
       console.log(pageElement);
-      return pageElement.find('.page-number').click(function(e) {
+      return pageElement.find('.remove-page-button').click(function(e) {
         var i, pageElements, _results;
         console.log('lafefe');
         if (page.active) {
@@ -122,7 +146,7 @@
         i = 0;
         _results = [];
         while (i < pages.length) {
-          $('.page-number').eq(i).text('page #' + (i + 1));
+          $('.page-number').eq(i).text('#' + (i + 1) + ' Page Name');
           _results.push(i++);
         }
         return _results;
