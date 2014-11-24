@@ -10,12 +10,19 @@ body{
 	bottom: 0;
 	left: 0;
 	right: 0;
+	padding-top: 39px;
 }
 
 ul{
 	margin: 0;
 	padding: 0;
 	list-style: none;
+}
+
+a{
+	&:hover{
+		text-decoration: none;
+	}
 }
 
 #toolbar-panel{
@@ -44,8 +51,12 @@ ul{
 	position: relative;
 }
 
-#editor{ 
-    position: absolute;
+#yaml-editor{
+	padding: 10px;
+}
+
+.editor-control{ 
+    position: absolute !important;
     top: 0;
     right: 0;
     bottom: 0;
@@ -53,8 +64,65 @@ ul{
 }
 
 .editor-panel{
+	position: relative;
+
 	&.two-view{
 		height: 50% !important;
+	}
+}
+
+.panel{
+	border-radius: 0 !important;
+
+	.panel-heading{
+		background: #ddd;
+		border-radius: 0;
+		color: #666;
+
+		.panel-title{
+			font-size: 14px;
+		}
+	}
+}
+
+.element-item{
+	padding: 0;
+	background: #5da0c9;
+	color: #fff;
+	font-size: 13px;
+	border-radius: 4px;
+	max-width: 200px;
+	display: inline-block;
+	border-radius: 2px;
+	overflow: hidden;
+
+	&:hover{
+		color: #fff;
+
+		.element-control{
+			display: inline-block;
+		}
+	}
+
+	+ .element-item{
+		margin-left: 5px;
+	}
+
+	.element-control{
+		display: none;
+		background: #555 !important;
+	}
+
+	.element{
+		border: none;
+		background: transparent;
+		border-radius: 0;
+	}
+
+	.element-text-button{
+		font-size: 12px;
+		padding: 3px 10px;
+		text-align: left;
 	}
 }
 

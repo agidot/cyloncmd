@@ -6,7 +6,7 @@ require [
   "ace/ace"
   "ace/ext/language_tools"
 ], (ace, langTools) ->
-  editor = ace.edit("editor")
+  editor = ace.edit("gherkin-editor")
   editor.setTheme "ace/theme/twilight"
   editor.getSession().setMode "ace/mode/cylon"
   document = editor.getSession().getDocument()
@@ -84,9 +84,22 @@ require [
     if element.comment is undefined
       element.comment = ''
     html = ''
-    html += '<button type="button" class="btn btn-primary elementBtn" data-toggle="modal" data-element-id="'+ element.elementId + '" data-target="#elementModal">' + element.name + '</button>'
+
+    html += '<li class="element-item">
+              <div class="btn-group">
+                <button type="button" class="element element-text-button btn btn-primary elementBtn" data-toggle="modal" data-element-id="'+ element.elementId + '" data-target="#elementModal">
+                  <span class="element-text">' + element.name + '</span>
+                </button><button type="button" class="element element-control">
+                  <i class="fa fa-pencil"></i>
+                </button><button type="button" class="element element-control">
+                  <i class="fa fa-remove"></i>
+                </button>
+              </div>
+            </li>';
+
+    # html += '<button type="button" class="b.find("elements")tn btn-primary elementBtn" data-toggle="modal" data-element-id="'+ element.elementId + '" data-target="#elementModal">' + element.name + '</button>'
     console.log html
-    $('.page-object').eq(pageIndex).append html
+    $('.page-object').eq(pageIndex).find('.elements').append html
     
 
   deactivatePage = (index) ->
@@ -100,7 +113,29 @@ require [
     pages.push page
     html = ''
     console.log pages.length-1
-    html += '<div class="page-object" id="page-object-' + (pages.length-1) + '"> <h4 class = "page-number"> page #' + pages.length + '</h4></div>'
+
+
+    html += '<div class="panel-group page-object" id="page-object-' + (pages.length-1) + '">
+              <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingOne">
+                  <div class="panel-title">
+                    <a data-toggle="collapse" data-parent="" href="#elements-0" aria-expanded="true" aria-controls="collapseOne">
+                      #' + pages.length + ' Page Name
+                    </a>
+
+                    <a href="#" class="pull-right">
+                      <i class="fa fa-close remove-button remove-page-button"></i>
+                    </a>
+                  </div>
+                </div>
+                <div id="elements-' + (pages.length-1) + '" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        <ul class="elements"></ul>
+                    </div>
+                </div>
+              </div>
+          </div>';
+
     console.log html
     $('#yaml-editor-panel').append html
     pageElement = $('#page-object-'+ (pages.length-1))
