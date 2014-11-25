@@ -40,10 +40,6 @@ textarea{
 	border-radius: 0 !important;
 }
 
-.btn{
-	border-radius: 2px;
-}
-
 .modal-dialog{
 	font-size: 13px;
 
@@ -205,9 +201,11 @@ textarea{
 	}
 
 	.element{
-		border: none;
 		background: transparent;
 		border-radius: 0;
+		padding: 3px 7px;
+		text-align: center;
+		color: #fff;
 
 		&:focus{
 			outline: none;
@@ -229,6 +227,8 @@ textarea{
 }
 
 .btn{
+	border-radius: 2px;
+
 	&.file{
         position: relative;
         overflow: hidden;
@@ -248,4 +248,15 @@ textarea{
     	background: #55acee;
     	border: 1px solid #55acee;
     }
+}
+
+.page-controls{
+	a{
+		display: inline-block;
+		color: #777;
+
+		+ a{
+			margin-left: 5px;
+		}
+	}
 }

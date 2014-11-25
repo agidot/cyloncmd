@@ -26,9 +26,6 @@ input[type="text"],
 textarea {
   border-radius: 0 !important;
 }
-.btn {
-  border-radius: 2px;
-}
 .modal-dialog {
   font-size: 13px;
 }
@@ -163,9 +160,11 @@ textarea {
   min-height: 25px;
 }
 .element-item .element {
-  border: none;
   background: transparent;
   border-radius: 0;
+  padding: 3px 7px;
+  text-align: center;
+  color: #fff;
 }
 .element-item .element:focus {
   outline: none;
@@ -183,6 +182,9 @@ textarea {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.btn {
+  border-radius: 2px;
+}
 .btn.file {
   position: relative;
   overflow: hidden;
@@ -199,4 +201,11 @@ textarea {
 .btn.btn-primary {
   background: #55acee;
   border: 1px solid #55acee;
+}
+.page-controls a {
+  display: inline-block;
+  color: #777;
+}
+.page-controls a + a {
+  margin-left: 5px;
 }

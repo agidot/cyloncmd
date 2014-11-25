@@ -88,13 +88,15 @@ require [
 
     html += '<li class="element-item">
               <div class="btn-group">
-                <button type="button" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="'+ element.elementId + '">
+                <a href="#" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="'+ element.elementId + '">
                   <span class="element-text">' + element.name + '</span>
-                </button><button type="button" class="element element-control">
+                </a><a href="#" title="Highlight element in page" class="element element-control">
+                  <i class="fa fa-paint-brush"></i>
+                </a><a href="#" title="Insert element to editor" class="element element-control">
                   <i class="fa fa-long-arrow-up"></i>
-                </button><button type="button" class="element element-control remove-element-button">
+                </a><a href="#" title="Remove element" class="element element-control remove-element-button">
                   <i class="fa fa-remove"></i>
-                </button>
+                </a>
               </div>
             </li>';
 
@@ -139,10 +141,17 @@ require [
                     <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length-1) + '">
                       #' + pages.length + ' Page Name
                     </a>
-
-                    <a href="#" class="pull-right remove-page-button">
-                      <i class="fa fa-close remove-button"></i>
-                    </a>
+                    <div class="page-controls pull-right">
+                      <a href="#" title="Highlight all elements in page" class="highlight-elements-button">
+                        <i class="fa fa-paint-brush"></i>
+                      </a>
+                      <a href="#" title="Edit Page" class="edit-page-button">
+                        <i class="fa fa-pencil"></i>
+                      </a>
+                      <a href="#" title="Remove Page" class="remove-page-button">
+                        <i class="fa fa-close remove-button"></i>
+                      </a>
+                    </div>
                   </div>
                 </div>
                 <div id="elements-' + (pages.length-1) + '" class="panel-collapse collapse in">
