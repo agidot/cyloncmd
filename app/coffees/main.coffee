@@ -66,6 +66,7 @@ require [
     @url = url
     @active = false
     @elementCount = 0
+    @Id = -1
     return
 
   pages = []
@@ -76,9 +77,9 @@ require [
 
   addElement = (pageIndex, element) ->
     page = pages[pageIndex]
-    element.elementId = '' + pageIndex + '-' + page.elements.length
+    element.Id = '' + page.Id + '-' + page.elementCount++
     page.elements.push element
-    console.log element.elementId
+    console.log element.Id
 
     pageURL = page.url
     elements = page.elements
@@ -88,9 +89,9 @@ require [
 
     html += '<li class="element-item">
               <div class="btn-group">
-                <a href="#" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="'+ element.elementId + '">
+                <a href="#" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="'+ element.Id + '">
                   <span class="element-text">' + element.name + '</span>
-                </a><a href="#" title="Highlight element in page" class="element element-control">
+                </a><a href="#" title="Highlight element in page" class="element element-control find-element-button">
                   <i class="fa fa-paint-brush"></i>
                 </a><a href="#" title="Insert element to editor" class="element element-control">
                   <i class="fa fa-long-arrow-up"></i>
@@ -100,7 +101,7 @@ require [
               </div>
             </li>';
 
-    console.log html
+
     pageElement =  $('.page-object').eq(pageIndex)
     pageElement.find('.elements').append html
     elementDom = pageElement.find('.element-item').eq(elements.length-1)
@@ -115,12 +116,19 @@ require [
           Xpath: element.Xpath
           url: pageURL
     elementDom.find('.remove-element-button').click (e) ->
+      elementIndex = $(this).closest('.element-item').index()
       chrome.tabs.sendMessage page.tabId,
         msg: 'removeStyleAtXpath'
         Xpath: element.Xpath
         url: pageURL
-      elements.splice pageIndex, 1
+      elements.splice elementIndex, 1
+      console.log elements
       elementDom.remove()
+    elementDom.find('.find-element-button').click (e) ->
+      chrome.tabs.sendMessage page.tabId,
+        msg: 'findXpath'
+        Xpath: element.Xpath
+        url: pageURL
 
   deactivatePage = (index) ->
     pages[index].active = false
@@ -128,13 +136,13 @@ require [
     pages[index].active = true
   addPage = (tabId, pageURL, pageTitle) ->
     pageURL = stripTrailingSlash(pageURL)
-    pageCount++
     page = new Page(tabId, pageURL, pageTitle)
+    page.Id = pageCount++
     pages.push page
     html = ''
     console.log pages.length-1
 
-    html += '<div class="panel-group page-object" id="page-object-' + (pages.length-1) + '">
+    html += '<div class="panel-group page-object" id="page-object-' + page.Id + '">
               <div class="panel panel-default">
                 <div class="panel-heading" role="tab" id="headingOne">
                   <div class="panel-title">
@@ -142,7 +150,7 @@ require [
                       #' + pages.length + ' Page Name
                     </a>
                     <div class="page-controls pull-right">
-                      <a href="#" title="Highlight all elements in page" class="highlight-elements-button">
+                      <a href="#" title="Highlight all elements in page" class="find-elements-button">
                         <i class="fa fa-paint-brush"></i>
                       </a>
                       <a href="#" title="Edit Page" class="edit-page-button">
@@ -154,7 +162,7 @@ require [
                     </div>
                   </div>
                 </div>
-                <div id="elements-' + (pages.length-1) + '" class="panel-collapse collapse in">
+                <div id="elements-' + page.Id + '" class="panel-collapse collapse in">
                     <div class="panel-body">
                         <ul class="elements"></ul>
                     </div>
@@ -162,22 +170,44 @@ require [
               </div>
           </div>';
 
-    console.log html
     $('#yaml-editor').append html
-    pageElement = $('#page-object-'+ (pages.length-1))
+    pageElement = $('.page-object').eq(pages.length-1)
     console.log pageElement
     pageElement.find('.remove-page-button').click (e) ->
-      console.log 'lafefe'
+      index = $(this).closest('.page-object').index()
+      console.log index
+      console.log pages
       if page.active
         chrome.tabs.sendMessage page.tabId,
           msg: 'removeAllStyles'
-      pages.splice pages.length-1
+      pages.splice index, 1
       pageElement.remove()
       pageElements = $('.page-object')
-      i = 0
+      i = index
       while i < pages.length
         $('.page-number').eq(i).text '#' + (i + 1) + ' Page Name'
         i++
+    pageElement.find('.find-elements-button').click (e) ->
+      index = $(this).closest('.page-object').index()
+      Xpaths = []
+      for j of page.elements
+        Xpaths.push page.elements[j].Xpath
+      if page.active
+        chrome.tabs.sendMessage page.tabId,
+          msg: 'findXpaths'
+          Xpaths: Xpaths
+
+        chrome.tabs.update page.tabId,
+          active: true
+      else
+        chrome.windows.create
+          url: pageURL
+        , (wind) ->
+          activatePage index
+          page.tabId = wind.tabs[0].id
+          tobeSent[wind.tabs[0].id] = Xpaths
+          return false
+    page.active = true
 
   processIncomingMessage = (request, sender, sendResponse) ->
     console.log sender.tab.url
@@ -189,7 +219,6 @@ require [
       haveTabId = false
       console.log pages
       for index of pages
-        console.log 'kak'
         console.log pages[index].url
         console.log senderURL
         if pages[index].tabId is sender.tab.id and pages[index].url is senderURL
@@ -208,7 +237,6 @@ require [
         chrome.tabs.sendMessage sender.tab.id,
           msg: 'findXpaths'
           Xpaths: tobeSent[sender.tab.id]
-
         delete tobeSent[sender.tab.id]
 
         return
@@ -260,16 +288,15 @@ require [
       return
     console.log('awgweg')
     $('#elementModal').on 'show.bs.modal', (event)-> 
-      console.log 'awegawhar'
       button = $(event.relatedTarget) 
-      console.log 'efwegewgg'
       elementId = button.data('element-id')
-      pageIndex = parseInt elementId.split('-')[0]
-      elementId = parseInt elementId.split('-')[1]
-      console.log 'pageIndex ' + pageIndex + ' elementId ' + elementId
-      element = pages[pageIndex].elements[elementId]
+      element = null
+      console.log elementId
+      for page in pages
+        for _element in page.elements
+          if _element.Id is elementId
+            element = _element
       modal = $(this)
-      console.log modal
       modal.find('.modal-title').text(element.Xpath)
       modal.find('.modal-body input').val(element.name)
       modal.find('.modal-body textarea').val(element.comment)

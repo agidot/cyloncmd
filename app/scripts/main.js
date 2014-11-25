@@ -68,6 +68,7 @@
       this.url = url;
       this.active = false;
       this.elementCount = 0;
+      this.Id = -1;
     };
     pages = [];
     pageCount = 0;
@@ -77,17 +78,16 @@
     addElement = function(pageIndex, element) {
       var elementDom, elements, html, page, pageElement, pageURL;
       page = pages[pageIndex];
-      element.elementId = '' + pageIndex + '-' + page.elements.length;
+      element.Id = '' + page.Id + '-' + page.elementCount++;
       page.elements.push(element);
-      console.log(element.elementId);
+      console.log(element.Id);
       pageURL = page.url;
       elements = page.elements;
       if (element.comment === void 0) {
         element.comment = '';
       }
       html = '';
-      html += '<li class="element-item"> <div class="btn-group"> <a href="#" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="' + element.elementId + '"> <span class="element-text">' + element.name + '</span> </a><a href="#" title="Highlight element in page" class="element element-control"> <i class="fa fa-paint-brush"></i> </a><a href="#" title="Insert element to editor" class="element element-control"> <i class="fa fa-long-arrow-up"></i> </a><a href="#" title="Remove element" class="element element-control remove-element-button"> <i class="fa fa-remove"></i> </a> </div> </li>';
-      console.log(html);
+      html += '<li class="element-item"> <div class="btn-group"> <a href="#" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="' + element.Id + '"> <span class="element-text">' + element.name + '</span> </a><a href="#" title="Highlight element in page" class="element element-control find-element-button"> <i class="fa fa-paint-brush"></i> </a><a href="#" title="Insert element to editor" class="element element-control"> <i class="fa fa-long-arrow-up"></i> </a><a href="#" title="Remove element" class="element element-control remove-element-button"> <i class="fa fa-remove"></i> </a> </div> </li>';
       pageElement = $('.page-object').eq(pageIndex);
       pageElement.find('.elements').append(html);
       elementDom = pageElement.find('.element-item').eq(elements.length - 1);
@@ -104,14 +104,24 @@
           url: pageURL
         });
       });
-      return elementDom.find('.remove-element-button').click(function(e) {
+      elementDom.find('.remove-element-button').click(function(e) {
+        var elementIndex;
+        elementIndex = $(this).closest('.element-item').index();
         chrome.tabs.sendMessage(page.tabId, {
           msg: 'removeStyleAtXpath',
           Xpath: element.Xpath,
           url: pageURL
         });
-        elements.splice(pageIndex, 1);
+        elements.splice(elementIndex, 1);
+        console.log(elements);
         return elementDom.remove();
+      });
+      return elementDom.find('.find-element-button').click(function(e) {
+        return chrome.tabs.sendMessage(page.tabId, {
+          msg: 'findXpath',
+          Xpath: element.Xpath,
+          url: pageURL
+        });
       });
     };
     deactivatePage = function(index) {
@@ -123,28 +133,29 @@
     addPage = function(tabId, pageURL, pageTitle) {
       var html, page, pageElement;
       pageURL = stripTrailingSlash(pageURL);
-      pageCount++;
       page = new Page(tabId, pageURL, pageTitle);
+      page.Id = pageCount++;
       pages.push(page);
       html = '';
       console.log(pages.length - 1);
-      html += '<div class="panel-group page-object" id="page-object-' + (pages.length - 1) + '"> <div class="panel panel-default"> <div class="panel-heading" role="tab" id="headingOne"> <div class="panel-title"> <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length - 1) + '"> #' + pages.length + ' Page Name </a> <div class="page-controls pull-right"> <a href="#" title="Highlight all elements in page" class="highlight-elements-button"> <i class="fa fa-paint-brush"></i> </a> <a href="#" title="Edit Page" class="edit-page-button"> <i class="fa fa-pencil"></i> </a> <a href="#" title="Remove Page" class="remove-page-button"> <i class="fa fa-close remove-button"></i> </a> </div> </div> </div> <div id="elements-' + (pages.length - 1) + '" class="panel-collapse collapse in"> <div class="panel-body"> <ul class="elements"></ul> </div> </div> </div> </div>';
-      console.log(html);
+      html += '<div class="panel-group page-object" id="page-object-' + page.Id + '"> <div class="panel panel-default"> <div class="panel-heading" role="tab" id="headingOne"> <div class="panel-title"> <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length - 1) + '"> #' + pages.length + ' Page Name </a> <div class="page-controls pull-right"> <a href="#" title="Highlight all elements in page" class="find-elements-button"> <i class="fa fa-paint-brush"></i> </a> <a href="#" title="Edit Page" class="edit-page-button"> <i class="fa fa-pencil"></i> </a> <a href="#" title="Remove Page" class="remove-page-button"> <i class="fa fa-close remove-button"></i> </a> </div> </div> </div> <div id="elements-' + page.Id + '" class="panel-collapse collapse in"> <div class="panel-body"> <ul class="elements"></ul> </div> </div> </div> </div>';
       $('#yaml-editor').append(html);
-      pageElement = $('#page-object-' + (pages.length - 1));
+      pageElement = $('.page-object').eq(pages.length - 1);
       console.log(pageElement);
-      return pageElement.find('.remove-page-button').click(function(e) {
-        var i, pageElements, _results;
-        console.log('lafefe');
+      pageElement.find('.remove-page-button').click(function(e) {
+        var i, index, pageElements, _results;
+        index = $(this).closest('.page-object').index();
+        console.log(index);
+        console.log(pages);
         if (page.active) {
           chrome.tabs.sendMessage(page.tabId, {
             msg: 'removeAllStyles'
           });
         }
-        pages.splice(pages.length - 1);
+        pages.splice(index, 1);
         pageElement.remove();
         pageElements = $('.page-object');
-        i = 0;
+        i = index;
         _results = [];
         while (i < pages.length) {
           $('.page-number').eq(i).text('#' + (i + 1) + ' Page Name');
@@ -152,6 +163,33 @@
         }
         return _results;
       });
+      pageElement.find('.find-elements-button').click(function(e) {
+        var Xpaths, index, j;
+        index = $(this).closest('.page-object').index();
+        Xpaths = [];
+        for (j in page.elements) {
+          Xpaths.push(page.elements[j].Xpath);
+        }
+        if (page.active) {
+          chrome.tabs.sendMessage(page.tabId, {
+            msg: 'findXpaths',
+            Xpaths: Xpaths
+          });
+          return chrome.tabs.update(page.tabId, {
+            active: true
+          });
+        } else {
+          return chrome.windows.create({
+            url: pageURL
+          }, function(wind) {
+            activatePage(index);
+            page.tabId = wind.tabs[0].id;
+            tobeSent[wind.tabs[0].id] = Xpaths;
+            return false;
+          });
+        }
+      });
+      return page.active = true;
     };
     processIncomingMessage = function(request, sender, sendResponse) {
       var element, elementsDom, haveTabId, i, index, j, k, page, senderURL;
@@ -166,7 +204,6 @@
         haveTabId = false;
         console.log(pages);
         for (index in pages) {
-          console.log('kak');
           console.log(pages[index].url);
           console.log(senderURL);
           if (pages[index].tabId === sender.tab.id && pages[index].url === senderURL) {
@@ -258,17 +295,22 @@
       });
       console.log('awgweg');
       $('#elementModal').on('show.bs.modal', function(event) {
-        var button, element, elementId, modal, pageIndex;
-        console.log('awegawhar');
+        var button, element, elementId, modal, page, _element, _i, _j, _len, _len1, _ref;
         button = $(event.relatedTarget);
-        console.log('efwegewgg');
         elementId = button.data('element-id');
-        pageIndex = parseInt(elementId.split('-')[0]);
-        elementId = parseInt(elementId.split('-')[1]);
-        console.log('pageIndex ' + pageIndex + ' elementId ' + elementId);
-        element = pages[pageIndex].elements[elementId];
+        element = null;
+        console.log(elementId);
+        for (_i = 0, _len = pages.length; _i < _len; _i++) {
+          page = pages[_i];
+          _ref = page.elements;
+          for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+            _element = _ref[_j];
+            if (_element.Id === elementId) {
+              element = _element;
+            }
+          }
+        }
         modal = $(this);
-        console.log(modal);
         modal.find('.modal-title').text(element.Xpath);
         modal.find('.modal-body input').val(element.name);
         modal.find('.modal-body textarea').val(element.comment);
