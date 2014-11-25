@@ -101,7 +101,6 @@ require [
               </div>
             </li>';
 
-
     pageElement =  $('.page-object').eq(pageIndex)
     pageElement.find('.elements').append html
     elementDom = pageElement.find('.element-item').eq(elements.length-1)
