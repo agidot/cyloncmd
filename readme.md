@@ -19,7 +19,7 @@ $ brew install node
 $ npm install -g bower
 ```
 5. Clone (or download zip) cyloncmd to your machine
-6. Nevigate to cyloncmd project direcotry
+6. Nevigate to cyloncmd project directory
 7. Get all dependency packages by running following commands
 ```sh
 $ npm install
