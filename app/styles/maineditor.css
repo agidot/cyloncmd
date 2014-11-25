@@ -98,6 +98,7 @@ textarea {
 }
 .editor-panel {
   position: relative;
+  transition-duration: 0.5s;
 }
 .editor-panel.two-view {
   height: 50% !important;
