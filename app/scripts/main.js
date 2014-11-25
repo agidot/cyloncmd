@@ -125,7 +125,8 @@
       });
     };
     deactivatePage = function(index) {
-      return pages[index].active = false;
+      pages[index].active = false;
+      return $('.page-object').eq(index).find('.element-item').addClass('not-found');
     };
     activatePage = function(index) {
       return pages[index].active = true;
@@ -145,8 +146,6 @@
       pageElement.find('.remove-page-button').click(function(e) {
         var i, index, pageElements, _results;
         index = $(this).closest('.page-object').index();
-        console.log(index);
-        console.log(pages);
         if (page.active) {
           chrome.tabs.sendMessage(page.tabId, {
             msg: 'removeAllStyles'
@@ -245,11 +244,11 @@
             j = 0;
             while (j < pages[i].elements.length) {
               if (pages[i].elements[j].Xpath === request.Xpath) {
-                elementsDom = $('.page-object').eq(i).find('.element-no');
+                elementsDom = $('.page-object').eq(i).find('.element-item');
                 if (request.found) {
-                  elementsDom.eq(j).css('color', 'green');
+                  elementsDom.eq(j).removeClass('not-found');
                 } else {
-                  elementsDom.eq(j).css('color', 'red');
+                  elementsDom.eq(j).addClass('not-found');
                 }
               }
               j++;

@@ -132,6 +132,7 @@ require [
 
   deactivatePage = (index) ->
     pages[index].active = false
+    $('.page-object').eq(index).find('.element-item').addClass('not-found')
   activatePage = (index) ->
     pages[index].active = true
   addPage = (tabId, pageURL, pageTitle) ->
@@ -175,8 +176,6 @@ require [
     console.log pageElement
     pageElement.find('.remove-page-button').click (e) ->
       index = $(this).closest('.page-object').index()
-      console.log index
-      console.log pages
       if page.active
         chrome.tabs.sendMessage page.tabId,
           msg: 'removeAllStyles'
@@ -250,11 +249,11 @@ require [
 
           while j < pages[i].elements.length
             if pages[i].elements[j].Xpath is request.Xpath
-              elementsDom = $('.page-object').eq(i).find('.element-no')
+              elementsDom = $('.page-object').eq(i).find('.element-item')
               if request.found
-                elementsDom.eq(j).css 'color', 'green'
+                elementsDom.eq(j).removeClass('not-found')
               else
-                elementsDom.eq(j).css 'color', 'red'
+                elementsDom.eq(j).addClass('not-found')
             j++
     return
 
