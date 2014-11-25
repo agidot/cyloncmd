@@ -57,6 +57,8 @@ textarea{
 
 			.modal-title{
 				font-size: 14px;
+				padding-right: 10px;
+				.text-overflow();
 			}
 		}
 
@@ -171,6 +173,24 @@ textarea{
 
 		.element-control{
 			display: inline-block;
+		}
+	}
+
+	&.not-found{
+		background: #ff5a5f;
+
+		.element-text-button{
+			background: #ff5a5f;
+			border: 1px solid #ff5a5f;
+		}
+	}
+
+	&.edit{
+		background: #ff9900;
+
+		.element-text-button{
+			background: #ff9900;
+			border: 1px solid #ff9900;
 		}
 	}
 

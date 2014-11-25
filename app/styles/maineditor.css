@@ -42,6 +42,10 @@ textarea {
 }
 .modal-dialog .modal-content .modal-header .modal-title {
   font-size: 14px;
+  padding-right: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .modal-dialog .modal-content .modal-footer {
   padding: 10px 15px;
@@ -135,6 +139,20 @@ textarea {
 }
 .element-item:hover .element-control {
   display: inline-block;
+}
+.element-item.not-found {
+  background: #ff5a5f;
+}
+.element-item.not-found .element-text-button {
+  background: #ff5a5f;
+  border: 1px solid #ff5a5f;
+}
+.element-item.edit {
+  background: #ff9900;
+}
+.element-item.edit .element-text-button {
+  background: #ff9900;
+  border: 1px solid #ff9900;
 }
 .element-item + .element-item {
   margin-left: 5px;
