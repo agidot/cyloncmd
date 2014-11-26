@@ -12,27 +12,40 @@
         <!-- endbuild -->
     </head>
     <body>
-        <div id="toolbar-panel" class="navbar-fixed-top">
-            <ul id="toolbar-menus">
-                <li>
-                    <a id="import-button" href="#" class="btn file">
-                        <i class="fa fa-upload"></i>
-                        <input type="file" id="import-file-input">
-                    </a>
-                </li>
-                <li>
-                    <a id="export-button" href="#" class=""><i class="fa fa-save"></i></a>
-                </li>
-                <li class="pull-right">
-                    <a id="yaml-toggle-button" href="#" class="active">Yaml</a>
-                </li>
-            </ul>   
-        </div>
         <div id="editor-panel" class="editor-panel two-view">
+            <div id="toolbar-panel" class="toolbar-panel navbar-fixed-top">
+                <ul id="toolbar-menus" class="toolbar-menus">
+                    <li>
+                        <a id="import-button" href="#" class="btn file">
+                            <i class="fa fa-upload"></i>
+                            <input type="file" id="import-file-input">
+                        </a>
+                    </li>
+                    <li>
+                        <a id="export-button" href="#" class=""><i class="fa fa-save"></i></a>
+                    </li>
+                    <li class="pull-right">
+                        <a id="yaml-toggle-button" href="#" class="active">Yaml</a>
+                    </li>
+                </ul>   
+            </div>
             <div id="gherkin-editor" class="editor-control"></div>
         </div>
           
         <div id="yaml-editor-panel" class="editor-panel two-view">
+            <div id="yaml-toolbar-panel" class="toolbar-panel navbar-static-top">
+                <ul id="yaml-toolbar-menus" class="toolbar-menus">
+                    <li>
+                        <a id="yaml-import-button" href="#" class="btn file">
+                            <i class="fa fa-upload"></i>
+                            <input type="file" id="import-file-input">
+                        </a>
+                    </li>
+                    <li>
+                        <a id="yaml-export-button" href="#" class=""><i class="fa fa-save"></i></a>
+                    </li>
+                </ul>   
+            </div>
             <div id="yaml-editor" class="editor-control"></div>
         </div>
 
