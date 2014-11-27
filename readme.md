@@ -14,7 +14,7 @@ $ brew update
 ```sh
 $ brew install node
 ```
-4.Next, install [Bower] (the package manager for web)
+4.Next, install [Bower]
 ```sh
 $ npm install -g bower
 ```
