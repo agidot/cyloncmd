@@ -25,37 +25,6 @@ require [
   stripTrailingSlash = (str) ->
     return str.substr(0, str.length - 1)  if str.substr(-1) is '/'
     str
-  readFile = (input) ->
-    if input.files and input.files[0]
-      reader = new FileReader()
-      reader.onload = (e) ->
-        editor.insert e.target.result
-        return
-
-      reader.readAsText input.files[0]
-    return
-
-  $("#yaml-toggle-button").click ->
-    $(this).toggleClass('active')
-    $(".editor-panel").toggleClass('two-view')
-    return
-
-  $("#import-file-input").click ->
-    $(this).val ""
-    return
-
-  $("#import-file-input").change ->
-    return  if $(this).val() is ""
-    readFile this
-    return
-
-  $("#export-button").click ->
-    text = editor.getSession().getValue()
-    blob = new Blob([text],
-      type: "text/plain;charset=utf-8"
-    )
-    saveAs blob, "feature-file.feature"
-    return
 
   chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
     console.log (if sender.tab then 'from a content script:' + sender.tab.url else 'from the extension')
@@ -98,7 +67,7 @@ require [
                   <span class="element-text">' + element.name + '</span>
                 </a><a href="#" title="Highlight element in page" class="element element-control find-element-button">
                   <i class="fa fa-paint-brush"></i>
-                </a><a href="#" title="Insert element to editor" class="element element-control">
+                </a><a href="#" title="Insert element to editor" class="element element-control insert-element-button">
                   <i class="fa fa-long-arrow-up"></i>
                 </a><a href="#" title="Remove element" class="element element-control remove-element-button">
                   <i class="fa fa-remove"></i>
@@ -136,6 +105,8 @@ require [
         msg: 'findXpath'
         Xpath: element.Xpath
         url: pageURL
+    elementDom.find('.insert-element-button').click (e) ->
+      editor.insert element.name
 
   deactivatePage = (index) ->
     pages[index].active = false
@@ -296,6 +267,130 @@ require [
       deactivatePage i  if pages[i].tabId is tabId  if pages[i].active
     return
 
+  onLoadYAML = (e) ->
+    yamlString = e.target.result
+    result = yamlString.split('---')
+    yamlObject = []
+    urls = []
+    i = 1
+
+    console.log pages
+    while i < result.length
+      result[i] = '---' + result[i]
+      yamlObject.push jsyaml.load(result[i])
+      yamlObject[i - 1].page.url = stripTrailingSlash(yamlObject[i - 1].page.url)
+      urls.push yamlObject[i - 1].page.url
+      addPage null, yamlObject[i - 1].page.url, yamlObject[i - 1].page.name
+      j = 0
+
+      while j < yamlObject[i - 1].elements.length
+        element = {}
+        element.name = yamlObject[i - 1].elements[j].name
+        element.Xpath = yamlObject[i - 1].elements[j].xpath
+        if yamlObject[i - 1].elements[j].comment
+          element.comment = yamlObject[i - 1].elements[j].comment
+        addElement i - 1, element, false
+        j++
+      i++
+    console.log pages
+    chrome.windows.create
+      url: urls
+    , (wind) ->
+      for tab of wind.tabs
+        elements = pages[tab].elements
+        pages[tab].tabId = wind.tabs[tab].id
+        Xpaths = []
+        for elem of elements
+          Xpaths.push elements[elem].Xpath
+        tobeSent[wind.tabs[tab].id] = Xpaths
+      return
+    return
+
+
+  constructYAML = -> 
+    count = 0
+    yaml = ''
+    for i of pages
+      yamlObject = {}
+      yamlObject.page = {}
+      yamlObject.elements = []
+      yamlObject.page.name = pages[i].name
+      yamlObject.page.url = pages[i].url
+      j = 0
+      while j < pages[i].elements.length
+        element = {}
+        element.xpath = pages[i].elements[j].name
+        element.xpath = pages[i].elements[j].Xpath
+        comment = pages[i].elements[j].comment
+        if comment isnt ''
+          element.comment = comment
+        yamlObject.elements.push element
+        j++
+      yamlDumped = jsyaml.safeDump(yamlObject)
+      yaml += '---\n' + yamlDumped
+      count++
+    yaml += '...'
+    blob = new Blob([yaml],
+      type: 'text/plain;charset=utf-8'
+    )
+    saveAs blob, 'profile.yaml'
+    return
+
+  readYAML = (input) ->
+    if input.files and input.files[0]
+      reader = new FileReader()
+      reader.onload = (e) ->
+        clearPages onLoadYAML, e
+        return
+
+      reader.readAsText input.files[0]
+    return
+
+  readFile = (input) ->
+    if input.files and input.files[0]
+      reader = new FileReader()
+      reader.onload = (e) ->
+        editor.insert e.target.result
+        return
+
+      reader.readAsText input.files[0]
+    return
+
+  $("#yaml-toggle-button").click ->
+    $(this).toggleClass('active')
+    $(".editor-panel").toggleClass('two-view')
+    return
+
+  $("#import-file-input").click ->
+    $(this).val ""
+    return
+
+  $("#import-file-input").change ->
+    return  if $(this).val() is ""
+    readFile this
+    return
+
+  $("#import-yaml-file-input").click ->
+    $(this).val ""
+    return
+
+  $("#import-yaml-file-input").change ->
+    return  if $(this).val() is ""
+    readYAML this
+    return
+
+  $("#export-button").click ->
+    text = editor.getSession().getValue()
+    blob = new Blob([text],
+      type: "text/plain;charset=utf-8"
+    )
+    saveAs blob, "feature-file.feature"
+    return
+
+  $("#yaml-export-button").click ->
+    constructYAML()
+    return
+  
 
   $ ->
     $('#clear-all-button').click (e) ->

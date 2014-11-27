@@ -7,7 +7,7 @@
   });
 
   require(["ace/ace", "ace/ext/language_tools", "ace/mode/cylon_completions"], function(ace, langTools, cylon_completions) {
-    var Page, activatePage, addElement, addPage, bg, clearPages, deactivatePage, document, editor, headerHeight, keywords, pageCount, pages, processIncomingMessage, readFile, stripTrailingSlash, tobeSent;
+    var Page, activatePage, addElement, addPage, bg, clearPages, constructYAML, deactivatePage, document, editor, headerHeight, keywords, onLoadYAML, pageCount, pages, processIncomingMessage, readFile, readYAML, stripTrailingSlash, tobeSent;
     editor = ace.edit("gherkin-editor");
     editor.setTheme("ace/theme/twilight");
     editor.getSession().setMode("ace/mode/cylon");
@@ -26,37 +26,6 @@
       }
       return str;
     };
-    readFile = function(input) {
-      var reader;
-      if (input.files && input.files[0]) {
-        reader = new FileReader();
-        reader.onload = function(e) {
-          editor.insert(e.target.result);
-        };
-        reader.readAsText(input.files[0]);
-      }
-    };
-    $("#yaml-toggle-button").click(function() {
-      $(this).toggleClass('active');
-      $(".editor-panel").toggleClass('two-view');
-    });
-    $("#import-file-input").click(function() {
-      $(this).val("");
-    });
-    $("#import-file-input").change(function() {
-      if ($(this).val() === "") {
-        return;
-      }
-      readFile(this);
-    });
-    $("#export-button").click(function() {
-      var blob, text;
-      text = editor.getSession().getValue();
-      blob = new Blob([text], {
-        type: "text/plain;charset=utf-8"
-      });
-      saveAs(blob, "feature-file.feature");
-    });
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       console.log((sender.tab ? 'from a content script:' + sender.tab.url : 'from the extension'));
       processIncomingMessage(request, sender, sendResponse);
@@ -88,7 +57,7 @@
         element.comment = '';
       }
       html = '';
-      html += '<li class="element-item"> <div class="btn-group"> <a href="#" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="' + element.Id + '"> <span class="element-text">' + element.name + '</span> </a><a href="#" title="Highlight element in page" class="element element-control find-element-button"> <i class="fa fa-paint-brush"></i> </a><a href="#" title="Insert element to editor" class="element element-control"> <i class="fa fa-long-arrow-up"></i> </a><a href="#" title="Remove element" class="element element-control remove-element-button"> <i class="fa fa-remove"></i> </a> </div> </li>';
+      html += '<li class="element-item"> <div class="btn-group"> <a href="#" class="element element-text-button btn btn-primary elementBtn" title="' + element.name + '" data-toggle="modal" data-target="#elementModal" data-element-id="' + element.Id + '"> <span class="element-text">' + element.name + '</span> </a><a href="#" title="Highlight element in page" class="element element-control find-element-button"> <i class="fa fa-paint-brush"></i> </a><a href="#" title="Insert element to editor" class="element element-control insert-element-button"> <i class="fa fa-long-arrow-up"></i> </a><a href="#" title="Remove element" class="element element-control remove-element-button"> <i class="fa fa-remove"></i> </a> </div> </li>';
       pageElement = $('.page-object').eq(pageIndex);
       pageElement.find('.elements').append(html);
       elementDom = pageElement.find('.element-item').eq(elements.length - 1);
@@ -121,12 +90,15 @@
           url: pageURL
         });
       });
-      return elementDom.find('.find-element-button').click(function(e) {
+      elementDom.find('.find-element-button').click(function(e) {
         return chrome.tabs.sendMessage(page.tabId, {
           msg: 'findXpath',
           Xpath: element.Xpath,
           url: pageURL
         });
+      });
+      return elementDom.find('.insert-element-button').click(function(e) {
+        return editor.insert(element.name);
       });
     };
     deactivatePage = function(index) {
@@ -303,6 +275,134 @@
           }
         }
       }
+    });
+    onLoadYAML = function(e) {
+      var element, i, j, result, urls, yamlObject, yamlString;
+      yamlString = e.target.result;
+      result = yamlString.split('---');
+      yamlObject = [];
+      urls = [];
+      i = 1;
+      console.log(pages);
+      while (i < result.length) {
+        result[i] = '---' + result[i];
+        yamlObject.push(jsyaml.load(result[i]));
+        yamlObject[i - 1].page.url = stripTrailingSlash(yamlObject[i - 1].page.url);
+        urls.push(yamlObject[i - 1].page.url);
+        addPage(null, yamlObject[i - 1].page.url, yamlObject[i - 1].page.name);
+        j = 0;
+        while (j < yamlObject[i - 1].elements.length) {
+          element = {};
+          element.name = yamlObject[i - 1].elements[j].name;
+          element.Xpath = yamlObject[i - 1].elements[j].xpath;
+          if (yamlObject[i - 1].elements[j].comment) {
+            element.comment = yamlObject[i - 1].elements[j].comment;
+          }
+          addElement(i - 1, element, false);
+          j++;
+        }
+        i++;
+      }
+      console.log(pages);
+      chrome.windows.create({
+        url: urls
+      }, function(wind) {
+        var Xpaths, elem, elements, tab;
+        for (tab in wind.tabs) {
+          elements = pages[tab].elements;
+          pages[tab].tabId = wind.tabs[tab].id;
+          Xpaths = [];
+          for (elem in elements) {
+            Xpaths.push(elements[elem].Xpath);
+          }
+          tobeSent[wind.tabs[tab].id] = Xpaths;
+        }
+      });
+    };
+    constructYAML = function() {
+      var blob, comment, count, element, i, j, yaml, yamlDumped, yamlObject;
+      count = 0;
+      yaml = '';
+      for (i in pages) {
+        yamlObject = {};
+        yamlObject.page = {};
+        yamlObject.elements = [];
+        yamlObject.page.name = pages[i].name;
+        yamlObject.page.url = pages[i].url;
+        j = 0;
+        while (j < pages[i].elements.length) {
+          element = {};
+          element.xpath = pages[i].elements[j].name;
+          element.xpath = pages[i].elements[j].Xpath;
+          comment = pages[i].elements[j].comment;
+          if (comment !== '') {
+            element.comment = comment;
+          }
+          yamlObject.elements.push(element);
+          j++;
+        }
+        yamlDumped = jsyaml.safeDump(yamlObject);
+        yaml += '---\n' + yamlDumped;
+        count++;
+      }
+      yaml += '...';
+      blob = new Blob([yaml], {
+        type: 'text/plain;charset=utf-8'
+      });
+      saveAs(blob, 'profile.yaml');
+    };
+    readYAML = function(input) {
+      var reader;
+      if (input.files && input.files[0]) {
+        reader = new FileReader();
+        reader.onload = function(e) {
+          clearPages(onLoadYAML, e);
+        };
+        reader.readAsText(input.files[0]);
+      }
+    };
+    readFile = function(input) {
+      var reader;
+      if (input.files && input.files[0]) {
+        reader = new FileReader();
+        reader.onload = function(e) {
+          editor.insert(e.target.result);
+        };
+        reader.readAsText(input.files[0]);
+      }
+    };
+    $("#yaml-toggle-button").click(function() {
+      $(this).toggleClass('active');
+      $(".editor-panel").toggleClass('two-view');
+    });
+    $("#import-file-input").click(function() {
+      $(this).val("");
+    });
+    $("#import-file-input").change(function() {
+      if ($(this).val() === "") {
+        return;
+      }
+      readFile(this);
+    });
+    $("#import-yaml-file-input").click(function() {
+      $(this).val("");
+    });
+    $("#import-yaml-file-input").change(function() {
+      if ($(this).val() === "") {
+        return;
+      }
+      readYAML(this);
+    });
+    $("#export-button").click(function() {
+      var blob, text;
+      text = editor.getSession().getValue();
+      blob = new Blob([text], {
+        type: "text/plain;charset=utf-8"
+      });
+      saveAs(blob, "feature-file.feature");
+    });
+    $("#yaml-export-button").click(function() {
+      constructYAML();
     });
     $(function() {
       $('#clear-all-button').click(function(e) {
