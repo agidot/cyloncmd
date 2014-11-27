@@ -5,18 +5,22 @@ require.config paths:
 require [
   "ace/ace"
   "ace/ext/language_tools"
-], (ace, langTools) ->
+  "ace/mode/cylon_completions"
+], (ace, langTools, cylon_completions) ->
+
   editor = ace.edit("gherkin-editor")
   editor.setTheme "ace/theme/twilight"
   editor.getSession().setMode "ace/mode/cylon"
+  console.log cylon_completions
+  keywords = new cylon_completions.CylonCompletions().keywords
   document = editor.getSession().getDocument()
   editor.setOptions
     enableBasicAutocompletion: true
     enableSnippets: true
     enableLiveAutocompletion: true
   langTools.snippetCompleter.getDocTooltip = false;
-  console.log 'editor'
-  console.log editor
+
+  
 
   stripTrailingSlash = (str) ->
     return str.substr(0, str.length - 1)  if str.substr(-1) is '/'
@@ -79,6 +83,7 @@ require [
     page = pages[pageIndex]
     element.Id = '' + page.Id + '-' + page.elementCount++
     page.elements.push element
+    keywords['element'].push(element.name);
     console.log element.Id
 
     pageURL = page.url
@@ -116,13 +121,16 @@ require [
           url: pageURL
     elementDom.find('.remove-element-button').click (e) ->
       elementIndex = $(this).closest('.element-item').index()
+      keywordIndex = keywords['element'].indexOf(element.name)
+      unless keywordIndex is -1
+        keywords['element'].splice keywordIndex,1
+      elements.splice elementIndex, 1
+      console.log elements
+      elementDom.remove()
       chrome.tabs.sendMessage page.tabId,
         msg: 'removeStyleAtXpath'
         Xpath: element.Xpath
         url: pageURL
-      elements.splice elementIndex, 1
-      console.log elements
-      elementDom.remove()
     elementDom.find('.find-element-button').click (e) ->
       chrome.tabs.sendMessage page.tabId,
         msg: 'findXpath'
@@ -139,6 +147,7 @@ require [
     page = new Page(tabId, pageURL, pageTitle)
     page.Id = pageCount++
     pages.push page
+    keywords['page'].push(pageTitle)
     html = ''
     console.log pages.length-1
 
@@ -178,6 +187,17 @@ require [
       if page.active
         chrome.tabs.sendMessage page.tabId,
           msg: 'removeAllStyles'
+      keywordIndex = keywords['page'].indexOf(page.name)
+      unless keywordIndex is -1
+        keywords['page'].splice keywordIndex,1
+      pagesName = page.elements.map((e)->
+        return e.name
+      )
+      console.log keywords['element']
+      keywords['element'] = keywords['element'].concat(pagesName).filter((item, index, array) ->
+        array.indexOf(item) is array.lastIndexOf(item)
+      )
+      console.log keywords['element']
       pages.splice index, 1
       pageElement.remove()
       pageElements = $('.page-object')
@@ -257,6 +277,8 @@ require [
     return
 
   clearPages = (callback, arg) ->
+    keywords['page'] = []
+    keywords['element'] = []
     pages = []
     pageCount = 0
     tobeSent = {}
@@ -300,9 +322,14 @@ require [
       modal.find('.modal-body textarea').val(element.comment)
       modal.find('.modal-footer .btn-primary').unbind('click')
       modal.find('.modal-footer .btn-primary').click( ->
-        element.name = modal.find('.modal-body input').val()
+        newElementName = modal.find('.modal-body input').val()
+        unless newElementName is element.name
+          keywordIndex = keywords['element'].indexOf(element.name)
+          unless keywordIndex is -1
+            keywords['element'].splice keywordIndex, 1
+            keywords['element'].push(newElementName)
+          element.name = newElementName
         element.comment = modal.find('.modal-body textarea').val()
-        console.log '' + element.name
         button.text element.name
         modal.modal 'hide'
         return

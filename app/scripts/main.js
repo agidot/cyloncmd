@@ -6,11 +6,13 @@
     }
   });
 
-  require(["ace/ace", "ace/ext/language_tools"], function(ace, langTools) {
-    var Page, activatePage, addElement, addPage, bg, clearPages, deactivatePage, document, editor, headerHeight, pageCount, pages, processIncomingMessage, readFile, stripTrailingSlash, tobeSent;
+  require(["ace/ace", "ace/ext/language_tools", "ace/mode/cylon_completions"], function(ace, langTools, cylon_completions) {
+    var Page, activatePage, addElement, addPage, bg, clearPages, deactivatePage, document, editor, headerHeight, keywords, pageCount, pages, processIncomingMessage, readFile, stripTrailingSlash, tobeSent;
     editor = ace.edit("gherkin-editor");
     editor.setTheme("ace/theme/twilight");
     editor.getSession().setMode("ace/mode/cylon");
+    console.log(cylon_completions);
+    keywords = new cylon_completions.CylonCompletions().keywords;
     document = editor.getSession().getDocument();
     editor.setOptions({
       enableBasicAutocompletion: true,
@@ -18,8 +20,6 @@
       enableLiveAutocompletion: true
     });
     langTools.snippetCompleter.getDocTooltip = false;
-    console.log('editor');
-    console.log(editor);
     stripTrailingSlash = function(str) {
       if (str.substr(-1) === '/') {
         return str.substr(0, str.length - 1);
@@ -80,6 +80,7 @@
       page = pages[pageIndex];
       element.Id = '' + page.Id + '-' + page.elementCount++;
       page.elements.push(element);
+      keywords['element'].push(element.name);
       console.log(element.Id);
       pageURL = page.url;
       elements = page.elements;
@@ -105,16 +106,20 @@
         });
       });
       elementDom.find('.remove-element-button').click(function(e) {
-        var elementIndex;
+        var elementIndex, keywordIndex;
         elementIndex = $(this).closest('.element-item').index();
-        chrome.tabs.sendMessage(page.tabId, {
+        keywordIndex = keywords['element'].indexOf(element.name);
+        if (keywordIndex !== -1) {
+          keywords['element'].splice(keywordIndex, 1);
+        }
+        elements.splice(elementIndex, 1);
+        console.log(elements);
+        elementDom.remove();
+        return chrome.tabs.sendMessage(page.tabId, {
           msg: 'removeStyleAtXpath',
           Xpath: element.Xpath,
           url: pageURL
         });
-        elements.splice(elementIndex, 1);
-        console.log(elements);
-        return elementDom.remove();
       });
       return elementDom.find('.find-element-button').click(function(e) {
         return chrome.tabs.sendMessage(page.tabId, {
@@ -137,6 +142,7 @@
       page = new Page(tabId, pageURL, pageTitle);
       page.Id = pageCount++;
       pages.push(page);
+      keywords['page'].push(pageTitle);
       html = '';
       console.log(pages.length - 1);
       html += '<div class="panel-group page-object" id="page-object-' + page.Id + '"> <div class="panel panel-default"> <div class="panel-heading" role="tab" id="headingOne"> <div class="panel-title"> <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length - 1) + '"> #' + pages.length + ' Page Name </a> <div class="page-controls pull-right"> <a href="#" title="Highlight all elements in page" class="find-elements-button"> <i class="fa fa-paint-brush"></i> </a> <a href="#" title="Edit Page" class="edit-page-button"> <i class="fa fa-pencil"></i> </a> <a href="#" title="Remove Page" class="remove-page-button"> <i class="fa fa-close remove-button"></i> </a> </div> </div> </div> <div id="elements-' + page.Id + '" class="panel-collapse collapse in"> <div class="panel-body"> <ul class="elements"></ul> </div> </div> </div> </div>';
@@ -144,13 +150,25 @@
       pageElement = $('.page-object').eq(pages.length - 1);
       console.log(pageElement);
       pageElement.find('.remove-page-button').click(function(e) {
-        var i, index, pageElements, _results;
+        var i, index, keywordIndex, pageElements, pagesName, _results;
         index = $(this).closest('.page-object').index();
         if (page.active) {
           chrome.tabs.sendMessage(page.tabId, {
             msg: 'removeAllStyles'
           });
         }
+        keywordIndex = keywords['page'].indexOf(page.name);
+        if (keywordIndex !== -1) {
+          keywords['page'].splice(keywordIndex, 1);
+        }
+        pagesName = page.elements.map(function(e) {
+          return e.name;
+        });
+        console.log(keywords['element']);
+        keywords['element'] = keywords['element'].concat(pagesName).filter(function(item, index, array) {
+          return array.indexOf(item) === array.lastIndexOf(item);
+        });
+        console.log(keywords['element']);
         pages.splice(index, 1);
         pageElement.remove();
         pageElements = $('.page-object');
@@ -258,6 +276,8 @@
       }
     };
     clearPages = function(callback, arg) {
+      keywords['page'] = [];
+      keywords['element'] = [];
       pages = [];
       pageCount = 0;
       tobeSent = {};
@@ -315,9 +335,17 @@
         modal.find('.modal-body textarea').val(element.comment);
         modal.find('.modal-footer .btn-primary').unbind('click');
         modal.find('.modal-footer .btn-primary').click(function() {
-          element.name = modal.find('.modal-body input').val();
+          var keywordIndex, newElementName;
+          newElementName = modal.find('.modal-body input').val();
+          if (newElementName !== element.name) {
+            keywordIndex = keywords['element'].indexOf(element.name);
+            if (keywordIndex !== -1) {
+              keywords['element'].splice(keywordIndex, 1);
+              keywords['element'].push(newElementName);
+            }
+            element.name = newElementName;
+          }
           element.comment = modal.find('.modal-body textarea').val();
-          console.log('' + element.name);
           button.text(element.name);
           modal.modal('hide');
         });
