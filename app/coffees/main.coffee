@@ -6,7 +6,10 @@ require [
   "ace/ace"
   "ace/ext/language_tools"
   "ace/mode/cylon_completions"
-], (ace, langTools, cylon_completions) ->
+  "./page"
+], (ace, langTools, cylon_completions,Page) ->
+
+  self = this
 
   editor = ace.edit("gherkin-editor")
   editor.setTheme "ace/theme/twilight"
@@ -20,8 +23,6 @@ require [
     enableLiveAutocompletion: true
   langTools.snippetCompleter.getDocTooltip = false;
 
-  
-
   stripTrailingSlash = (str) ->
     return str.substr(0, str.length - 1)  if str.substr(-1) is '/'
     str
@@ -30,19 +31,10 @@ require [
     console.log (if sender.tab then 'from a content script:' + sender.tab.url else 'from the extension')
     processIncomingMessage request, sender, sendResponse
     return
-      
 
-  Page = (tabId, url, name) ->
-    @tabId = tabId
-    @elements = []
-    @name = name
-    @url = url
-    @active = false
-    @elementCount = 0
-    @Id = -1
     return
 
-  pages = []
+  self.pages = []
   pageCount = 0
   bg = chrome.extension.getBackgroundPage()
   tobeSent = {}
@@ -109,31 +101,31 @@ require [
       editor.insert element.name
 
   deactivatePage = (index) ->
-    pages[index].active = false
+    self.pages[index].active = false
     $('.page-object').eq(index).find('.element-item').addClass('not-found')
   activatePage = (index) ->
-    pages[index].active = true
-  addPage = (tabId, pageURL, pageTitle) ->
+    self.pages[index].active = true
+  addPage = (tabId, pageURL, pageTitle, comment = "") ->
     pageURL = stripTrailingSlash(pageURL)
-    page = new Page(tabId, pageURL, pageTitle)
+    page = new Page(tabId, pageURL, pageTitle, comment)
     page.Id = pageCount++
-    pages.push page
+    self.pages.push page
     keywords['page'].push(pageTitle)
     html = ''
-    console.log pages.length-1
+    console.log self.pages.length-1
 
     html += '<div class="panel-group page-object" id="page-object-' + page.Id + '">
               <div class="panel panel-default">
                 <div class="panel-heading" role="tab" id="headingOne">
                   <div class="panel-title">
-                    <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length-1) + '">
-                      #' + pages.length + ' Page Name
+                    <a data-toggle="collapse" class="page-number" href="#elements-' + (self.pages.length-1) + '">
+                      #' + self.pages.length + ' ' + page.name + '
                     </a>
                     <div class="page-controls pull-right">
                       <a href="#" title="Highlight all elements in page" class="find-elements-button">
                         <i class="fa fa-paint-brush"></i>
                       </a>
-                      <a href="#" title="Edit Page" class="edit-page-button">
+                      <a href="#" title="Edit Page" class="edit-page-button" data-toggle="modal" data-target="#pageModal"  data-page-id="'+ page.Id + '">
                         <i class="fa fa-pencil"></i>
                       </a>
                       <a href="#" title="Remove Page" class="remove-page-button">
@@ -149,9 +141,10 @@ require [
                 </div>
               </div>
           </div>';
+    console.log html
 
     $('#yaml-editor').append html
-    pageElement = $('.page-object').eq(pages.length-1)
+    pageElement = $('.page-object').eq(self.pages.length-1)
     console.log pageElement
     pageElement.find('.remove-page-button').click (e) ->
       index = $(this).closest('.page-object').index()
@@ -169,11 +162,11 @@ require [
         array.indexOf(item) is array.lastIndexOf(item)
       )
       console.log keywords['element']
-      pages.splice index, 1
+      self.pages.splice index, 1
       pageElement.remove()
       pageElements = $('.page-object')
       i = index
-      while i < pages.length
+      while i < self.pages.length
         $('.page-number').eq(i).text '#' + (i + 1) + ' Page Name'
         i++
     pageElement.find('.find-elements-button').click (e) ->
@@ -206,11 +199,10 @@ require [
       element = request.element
       console.log element
       haveTabId = false
-      console.log pages
-      for index of pages
-        console.log pages[index].url
+      for index of self.pages
+        console.log self.pages[index].url
         console.log senderURL
-        if pages[index].tabId is sender.tab.id and pages[index].url is senderURL
+        if self.pages[index].tabId is sender.tab.id and self.pages[index].url is senderURL
           console.log index
           addElement index, element
           haveTabId = true
@@ -219,7 +211,7 @@ require [
         console.log senderURL
         console.log sender.tab.title
         page = addPage(sender.tab.id, senderURL, sender.tab.title)
-        addElement pages.length - 1, element
+        addElement self.pages.length - 1, element
     else if request.msg is 'newPage'
       sendResponse msg: 'startExtension'
       if tobeSent[sender.tab.id]
@@ -229,16 +221,16 @@ require [
         delete tobeSent[sender.tab.id]
 
         return
-      for k of pages
-        deactivatePage k  if pages[k].tabId is sender.tab.id and pages[k].url isnt senderURL  if pages[k].active
+      for k of self.pages
+        deactivatePage k  if self.pages[k].tabId is sender.tab.id and self.pages[k].url isnt senderURL  if self.pages[k].active
     else if request.msg is 'checkXpath'
       console.log 'checkXpath ' + request.Xpath + ' found = ' + request.found
-      for i of pages
-        if pages[i].tabId is sender.tab.id and pages[i].url is senderURL
+      for i of self.pages
+        if self.pages[i].tabId is sender.tab.id and self.pages[i].url is senderURL
           j = 0
 
-          while j < pages[i].elements.length
-            if pages[i].elements[j].Xpath is request.Xpath
+          while j < self.pages[i].elements.length
+            if self.pages[i].elements[j].Xpath is request.Xpath
               elementsDom = $('.page-object').eq(i).find('.element-item')
               if request.found
                 elementsDom.eq(j).removeClass('not-found')
@@ -250,7 +242,7 @@ require [
   clearPages = (callback, arg) ->
     keywords['page'] = []
     keywords['element'] = []
-    pages = []
+    self.pages = []
     pageCount = 0
     tobeSent = {}
     chrome.tabs.query {}, (tabs) ->
@@ -263,8 +255,8 @@ require [
 
     return
   chrome.tabs.onRemoved.addListener (tabId, removeInfo) ->
-    for i of pages
-      deactivatePage i  if pages[i].tabId is tabId  if pages[i].active
+    for i of self.pages
+      deactivatePage i  if self.pages[i].tabId is tabId  if self.pages[i].active
     return
 
   onLoadYAML = (e) ->
@@ -274,13 +266,13 @@ require [
     urls = []
     i = 1
 
-    console.log pages
+    console.log self.pages
     while i < result.length
       result[i] = '---' + result[i]
       yamlObject.push jsyaml.load(result[i])
       yamlObject[i - 1].page.url = stripTrailingSlash(yamlObject[i - 1].page.url)
       urls.push yamlObject[i - 1].page.url
-      addPage null, yamlObject[i - 1].page.url, yamlObject[i - 1].page.name
+      addPage null, yamlObject[i - 1].page.url, yamlObject[i - 1].page.name, yamlObject[i - 1].page.comment
       j = 0
 
       while j < yamlObject[i - 1].elements.length
@@ -310,18 +302,21 @@ require [
   constructYAML = -> 
     count = 0
     yaml = ''
-    for i of pages
+    for i of self.pages
       yamlObject = {}
       yamlObject.page = {}
       yamlObject.elements = []
-      yamlObject.page.name = pages[i].name
-      yamlObject.page.url = pages[i].url
+      yamlObject.page.name = self.pages[i].name
+      yamlObject.page.url = self.pages[i].url
+      comment = self.pages[i].comment
+      if comment isnt ''
+        yamlObject.page.comment = comment
       j = 0
-      while j < pages[i].elements.length
+      while j < self.pages[i].elements.length
         element = {}
-        element.xpath = pages[i].elements[j].name
-        element.xpath = pages[i].elements[j].Xpath
-        comment = pages[i].elements[j].comment
+        element.name = self.pages[i].elements[j].name
+        element.xpath = self.pages[i].elements[j].Xpath
+        comment = self.pages[i].elements[j].comment
         if comment isnt ''
           element.comment = comment
         yamlObject.elements.push element
@@ -401,16 +396,16 @@ require [
       $('.elements li').removeClass 'active'
       $(this).addClass 'active'
       return
-    console.log('awgweg')
+
     $('#elementModal').on 'show.bs.modal', (event)-> 
       button = $(event.relatedTarget) 
       elementId = button.data('element-id')
       element = null
       console.log elementId
-      for page in pages
-        for _element in page.elements
-          if _element.Id is elementId
-            element = _element
+      for page in self.pages
+        for e in page.elements
+          if e.Id is elementId
+            element = e
       modal = $(this)
       modal.find('.modal-title').text(element.Xpath)
       modal.find('.modal-body input').val(element.name)
@@ -430,6 +425,36 @@ require [
         return
       )
       return
+
+    $('#pageModal').on 'show.bs.modal', (event)-> 
+      button = $(event.relatedTarget)
+      pageId = button.data('page-id')
+      page = null
+      for p in self.pages
+        if p.Id is pageId
+          page = p
+      console.log 'page'
+      console.log page
+      modal = $(this)
+      modal.find('.modal-title').text(page.url)
+      modal.find('.modal-body input').val(page.name)
+      modal.find('.modal-body textarea').val(page.comment)
+      modal.find('.modal-footer .btn-primary').unbind('click')
+      modal.find('.modal-footer .btn-primary').click( ->
+        newPageName = modal.find('.modal-body input').val()
+        unless newPageName is page.name
+          keywordIndex = keywords['page'].indexOf(page.name)
+          unless keywordIndex is -1
+            keywords['page'].splice keywordIndex, 1
+            keywords['page'].push(newPageName)
+          page.name = newPageName
+        page.comment = modal.find('.modal-body textarea').val()
+        console.log button.closest('.page-object').find('.page-number').text()
+        button.closest('.page-object').find('.page-number').text(page.name)
+        modal.modal 'hide'
+        return
+      )
+      return
     return
-  return
+
     

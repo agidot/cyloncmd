@@ -30,7 +30,7 @@
       console.log((sender.tab ? 'from a content script:' + sender.tab.url : 'from the extension'));
       processIncomingMessage(request, sender, sendResponse);
     });
-    Page = function(tabId, url, name) {
+    Page = function(tabId, url, name, comment) {
       this.tabId = tabId;
       this.elements = [];
       this.name = name;
@@ -38,6 +38,7 @@
       this.active = false;
       this.elementCount = 0;
       this.Id = -1;
+      this.comment = comment;
     };
     pages = [];
     pageCount = 0;
@@ -108,16 +109,20 @@
     activatePage = function(index) {
       return pages[index].active = true;
     };
-    addPage = function(tabId, pageURL, pageTitle) {
+    addPage = function(tabId, pageURL, pageTitle, comment) {
       var html, page, pageElement;
+      if (comment == null) {
+        comment = "";
+      }
       pageURL = stripTrailingSlash(pageURL);
-      page = new Page(tabId, pageURL, pageTitle);
+      page = new Page(tabId, pageURL, pageTitle, comment);
       page.Id = pageCount++;
       pages.push(page);
       keywords['page'].push(pageTitle);
       html = '';
       console.log(pages.length - 1);
-      html += '<div class="panel-group page-object" id="page-object-' + page.Id + '"> <div class="panel panel-default"> <div class="panel-heading" role="tab" id="headingOne"> <div class="panel-title"> <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length - 1) + '"> #' + pages.length + ' Page Name </a> <div class="page-controls pull-right"> <a href="#" title="Highlight all elements in page" class="find-elements-button"> <i class="fa fa-paint-brush"></i> </a> <a href="#" title="Edit Page" class="edit-page-button"> <i class="fa fa-pencil"></i> </a> <a href="#" title="Remove Page" class="remove-page-button"> <i class="fa fa-close remove-button"></i> </a> </div> </div> </div> <div id="elements-' + page.Id + '" class="panel-collapse collapse in"> <div class="panel-body"> <ul class="elements"></ul> </div> </div> </div> </div>';
+      html += '<div class="panel-group page-object" id="page-object-' + page.Id + '"> <div class="panel panel-default"> <div class="panel-heading" role="tab" id="headingOne"> <div class="panel-title"> <a data-toggle="collapse" class="page-number" href="#elements-' + (pages.length - 1) + '"> #' + pages.length + ' ' + page.name + '</a> <div class="page-controls pull-right"> <a href="#" title="Highlight all elements in page" class="find-elements-button"> <i class="fa fa-paint-brush"></i> </a> <a href="#" title="Edit Page" class="edit-page-button" data-toggle="modal" data-target="#pageModal"  data-page-id="' + page.Id + '"> <i class="fa fa-pencil"></i> </a> <a href="#" title="Remove Page" class="remove-page-button"> <i class="fa fa-close remove-button"></i> </a> </div> </div> </div> <div id="elements-' + page.Id + '" class="panel-collapse collapse in"> <div class="panel-body"> <ul class="elements"></ul> </div> </div> </div> </div>';
+      console.log(html);
       $('#yaml-editor').append(html);
       pageElement = $('.page-object').eq(pages.length - 1);
       console.log(pageElement);
@@ -289,7 +294,7 @@
         yamlObject.push(jsyaml.load(result[i]));
         yamlObject[i - 1].page.url = stripTrailingSlash(yamlObject[i - 1].page.url);
         urls.push(yamlObject[i - 1].page.url);
-        addPage(null, yamlObject[i - 1].page.url, yamlObject[i - 1].page.name);
+        addPage(null, yamlObject[i - 1].page.url, yamlObject[i - 1].page.name, yamlObject[i - 1].page.comment);
         j = 0;
         while (j < yamlObject[i - 1].elements.length) {
           element = {};
@@ -329,10 +334,14 @@
         yamlObject.elements = [];
         yamlObject.page.name = pages[i].name;
         yamlObject.page.url = pages[i].url;
+        comment = pages[i].comment;
+        if (comment !== '') {
+          yamlObject.page.comment = comment;
+        }
         j = 0;
         while (j < pages[i].elements.length) {
           element = {};
-          element.xpath = pages[i].elements[j].name;
+          element.name = pages[i].elements[j].name;
           element.xpath = pages[i].elements[j].Xpath;
           comment = pages[i].elements[j].comment;
           if (comment !== '') {
@@ -404,7 +413,7 @@
     $("#yaml-export-button").click(function() {
       constructYAML();
     });
-    $(function() {
+    return $(function() {
       $('#clear-all-button').click(function(e) {
         clearPages();
       });
@@ -412,9 +421,8 @@
         $('.elements li').removeClass('active');
         $(this).addClass('active');
       });
-      console.log('awgweg');
       $('#elementModal').on('show.bs.modal', function(event) {
-        var button, element, elementId, modal, page, _element, _i, _j, _len, _len1, _ref;
+        var button, e, element, elementId, modal, page, _i, _j, _len, _len1, _ref;
         button = $(event.relatedTarget);
         elementId = button.data('element-id');
         element = null;
@@ -423,9 +431,9 @@
           page = pages[_i];
           _ref = page.elements;
           for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-            _element = _ref[_j];
-            if (_element.Id === elementId) {
-              element = _element;
+            e = _ref[_j];
+            if (e.Id === elementId) {
+              element = e;
             }
           }
         }
@@ -447,6 +455,41 @@
           }
           element.comment = modal.find('.modal-body textarea').val();
           button.text(element.name);
+          modal.modal('hide');
+        });
+      });
+      $('#pageModal').on('show.bs.modal', function(event) {
+        var button, modal, p, page, pageId, _i, _len;
+        button = $(event.relatedTarget);
+        pageId = button.data('page-id');
+        page = null;
+        for (_i = 0, _len = pages.length; _i < _len; _i++) {
+          p = pages[_i];
+          if (p.Id === pageId) {
+            page = p;
+          }
+        }
+        console.log('page');
+        console.log(page);
+        modal = $(this);
+        modal.find('.modal-title').text(page.url);
+        modal.find('.modal-body input').val(page.name);
+        modal.find('.modal-body textarea').val(page.comment);
+        modal.find('.modal-footer .btn-primary').unbind('click');
+        modal.find('.modal-footer .btn-primary').click(function() {
+          var keywordIndex, newPageName;
+          newPageName = modal.find('.modal-body input').val();
+          if (newPageName !== page.name) {
+            keywordIndex = keywords['page'].indexOf(page.name);
+            if (keywordIndex !== -1) {
+              keywords['page'].splice(keywordIndex, 1);
+              keywords['page'].push(newPageName);
+            }
+            page.name = newPageName;
+          }
+          page.comment = modal.find('.modal-body textarea').val();
+          console.log(button.closest('.page-object').find('.page-number').text());
+          button.closest('.page-object').find('.page-number').text(page.name);
           modal.modal('hide');
         });
       });
