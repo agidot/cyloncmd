@@ -14,7 +14,7 @@ $ brew update
 ```sh
 $ brew install node
 ```
-4.Next, install [Bower]
+4.Install [Bower]
 ```sh
 $ npm install -g bower
 ```
@@ -33,7 +33,16 @@ $ bower install
 
 10.Click 'Load unpacked extension...' button then select the **cyloncmd** project directory
 
+
+###For Windows
+1.Install [msysgit], make sure to check "run git from the windows command prompt" option
+
+2.Install [Node JS] on your machine ([npm], Node Package Manager, will be installed with Node JS)
+
+3.Do the same as step 4-10 of OSX guide. 
+[msysgit]:http://msysgit.github.io/
 [Node JS]:http://nodejs.org
 [Homebrew]:http://brew.sh/
-[Bower]:http://bower.io/
+[Bower]:https://www.npmjs.org/package/bower
 [npm]:https://www.npmjs.org/
+
