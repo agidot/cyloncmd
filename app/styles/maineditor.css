@@ -156,7 +156,7 @@ textarea {
   margin-left: 5px;
 }
 .element-item .element-control {
-  display: none;
+  display: inline-block;
   background: #66757f !important;
   min-height: 25px;
 }
